@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/fondo_app">
+
+    <!-- Encabezado -->
+    <TextView
+        android:id="@+id/tvHeaderRecursos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="8dp"
+        android:text="Centro de Recursos"
+        android:textColor="@color/gris_texto"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+
+    <!-- Buscador por palabra clave -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/searchViewRecursos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_search_card"
+        app:iconifiedByDefault="false"
+        app:queryHint="Buscar artículos o estrategias..." />
+
+    <!-- Filtros de categorías horizontales (Chips) -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingHorizontal="16dp"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupCategorias"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipTodas"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Todas" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipDisfuncion"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Disfunción Ejecutiva" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipTiempo"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ceguera del Tiempo" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipEstudio"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Técnicas de Estudio" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipPadres"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guía para Padres" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <!-- Lista de articulos -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvRecursos"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp" />
+
+    <!-- Error Handling -->
+    <TextView
+        android:id="@+id/tvSinResultados"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="32dp"
+        android:text="No se encontraron recursos para esa búsqueda.\nProbá seleccionando otra categoría."
+        android:textColor="@color/gris_texto"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+</LinearLayout>
