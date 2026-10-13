@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="verde_principal">#4A8272</color>
+    <color name="verde_secundario">#A3C0B2</color>
+    <color name="arena_decorativo">#C2B2A1</color>
+    <color name="gris_texto">#EAF0EC</color>
+    <color name="blanco_superficie">#242E2A</color>
+    <color name="fondo_app">#181F1C</color>
+</resources>
