@@ -11,19 +11,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecursoDao {
-    private DatabaseHelper dbHelper;
+    private final DatabaseHelper dbHelper;
 
     public RecursoDao(Context context) {
-        this.dbHelper = new DatabaseHelper(context);
+        this.dbHelper = DatabaseHelper.getInstance(context);
     }
-
-    // Obtener recursos filtrados con estado de favorito según el usuario activo
     public List<Recurso> obtenerRecursos(int idUsuario, String categoriaFiltro, String queryTexto) {
         List<Recurso> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         StringBuilder query = new StringBuilder(
-                "SELECT r.IdRecursos, r.Titulo, r.Contenido, r.Categoria, " +
+                "SELECT r.IdRecursos, r.Titulo, r.Contenido, r.Categoria, r.TiempoLecturaMin, " +
                         "CASE WHEN f.IdFavorito IS NOT NULL THEN 1 ELSE 0 END AS EsFavorito " +
                         "FROM Recursos r " +
                         "LEFT JOIN Favoritos f ON r.IdRecursos = f.IdRecurso AND f.IdUsuario = ? " +
@@ -52,9 +50,10 @@ public class RecursoDao {
                 String titulo = cursor.getString(cursor.getColumnIndexOrThrow("Titulo"));
                 String contenido = cursor.getString(cursor.getColumnIndexOrThrow("Contenido"));
                 String categoria = cursor.getString(cursor.getColumnIndexOrThrow("Categoria"));
+                int tiempoLectura = cursor.getInt(cursor.getColumnIndexOrThrow("TiempoLecturaMin"));
                 boolean esFav = cursor.getInt(cursor.getColumnIndexOrThrow("EsFavorito")) == 1;
 
-                lista.add(new Recurso(id, titulo, contenido, categoria, 2, esFav));
+                lista.add(new Recurso(id, titulo, contenido, categoria, tiempoLectura, esFav));
             } while (cursor.moveToNext());
         }
         cursor.close();

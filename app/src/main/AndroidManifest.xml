@@ -17,19 +17,20 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Pantalla principal de Recursos -->
+        <!-- TEMPORAL: el registro es la pantalla de inicio (en la etapa 4 pasa a ser el login) -->
         <activity
-            android:name=".ui.resources.RecursosActivity"
-            android:exported="true">
+            android:name=".ui.auth.RegistroActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Pantalla de lectura detallada del artículo -->
+        <!-- Pantalla principal de Recursos -->
         <activity
-            android:name=".ui.resources.DetalleRecursoActivity"
+            android:name=".ui.resources.RecursosActivity"
             android:exported="false" />
 
     </application>

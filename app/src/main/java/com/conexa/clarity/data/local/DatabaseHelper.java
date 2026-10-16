@@ -8,9 +8,19 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "clarity.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
 
-    public DatabaseHelper(Context context) {
+    private static DatabaseHelper instance;
+
+    // Todos piden la base con este método, así hay una sola para toda la app
+    public static synchronized DatabaseHelper getInstance(Context context) {
+        if (instance == null) {
+            instance = new DatabaseHelper(context.getApplicationContext());
+        }
+        return instance;
+    }
+
+    private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -22,23 +32,38 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Tabla Recursos según DER
+        // Usuarios (nuevo)
+        db.execSQL("CREATE TABLE Usuarios (" +
+                "IdUsuario INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "Nombre TEXT NOT NULL, " +
+                "Apellido TEXT NOT NULL, " +
+                "Email TEXT NOT NULL UNIQUE COLLATE NOCASE, " +
+                "Password TEXT NOT NULL, " +
+                "TipoPerfil TEXT NOT NULL DEFAULT 'GENERAL' CHECK (TipoPerfil IN ('GENERAL','PARENTAL')), " +
+                "PuntosTotales INTEGER NOT NULL DEFAULT 0, " +
+                "FechaRegistro TEXT NOT NULL DEFAULT (datetime('now','localtime')), " +
+                "Nivel INTEGER NOT NULL DEFAULT 1" +
+                ");");
+
+        // Recursos (ahora guarda el tiempo de lectura)
         db.execSQL("CREATE TABLE Recursos (" +
                 "IdRecursos INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "Titulo TEXT NOT NULL, " +
                 "Contenido TEXT NOT NULL, " +
-                "Categoria TEXT NOT NULL" +
+                "Categoria TEXT NOT NULL, " +
+                "TiempoLecturaMin INTEGER NOT NULL DEFAULT 2" +
                 ");");
 
-        // Tabla Favoritos según DER
+        // Favoritos (ahora apunta a Usuarios)
         db.execSQL("CREATE TABLE Favoritos (" +
                 "IdFavorito INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "IdUsuario INTEGER NOT NULL, " +
                 "IdRecurso INTEGER NOT NULL, " +
+                "UNIQUE (IdUsuario, IdRecurso), " +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE, " +
                 "FOREIGN KEY (IdRecurso) REFERENCES Recursos(IdRecursos) ON DELETE CASCADE" +
                 ");");
 
-        // Insertar datos de prueba iniciales para el RF7
         insertarDatosIniciales(db);
     }
 
@@ -72,6 +97,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS Favoritos");
         db.execSQL("DROP TABLE IF EXISTS Recursos");
+        db.execSQL("DROP TABLE IF EXISTS Usuarios");
         onCreate(db);
     }
 }
