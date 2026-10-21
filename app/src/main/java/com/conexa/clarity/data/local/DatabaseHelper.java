@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "clarity.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     private static DatabaseHelper instance;
 
@@ -43,6 +43,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "PuntosTotales INTEGER NOT NULL DEFAULT 0, " +
                 "FechaRegistro TEXT NOT NULL DEFAULT (datetime('now','localtime')), " +
                 "Nivel INTEGER NOT NULL DEFAULT 1" +
+                ");");
+
+        // Tareas
+        db.execSQL("CREATE TABLE Tareas (" +
+                "IdTarea INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "IdUsuario INTEGER NOT NULL, " +
+                "Titulo TEXT NOT NULL, " +
+                "Completada INTEGER NOT NULL DEFAULT 0, " +
+                "CreadaPorIA INTEGER NOT NULL DEFAULT 0, " +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE" +
+                ");");
+
+        // Consultas con el Chat
+        db.execSQL("CREATE TABLE ConsultasChat (" +
+                "IdConsulta INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "IdUsuario INTEGER NOT NULL, " +
+                "Consulta TEXT NOT NULL, " +
+                "Respuesta TEXT, " +
+                "Feedback INTEGER, " +
+                "Fecha TEXT NOT NULL DEFAULT (datetime('now','localtime')), " +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE" +
                 ");");
 
         // Recursos (ahora guarda el tiempo de lectura)
@@ -95,6 +116,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS Favoritos");
+        db.execSQL("DROP TABLE IF EXISTS Recursos");
+        db.execSQL("DROP TABLE IF EXISTS Usuarios");
+        db.execSQL("DROP TABLE IF EXISTS ConsultasChat");
+        db.execSQL("DROP TABLE IF EXISTS Tareas");
         db.execSQL("DROP TABLE IF EXISTS Favoritos");
         db.execSQL("DROP TABLE IF EXISTS Recursos");
         db.execSQL("DROP TABLE IF EXISTS Usuarios");
