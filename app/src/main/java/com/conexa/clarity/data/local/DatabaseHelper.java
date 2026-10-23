@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "clarity.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     private static DatabaseHelper instance;
 
@@ -85,6 +85,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY (IdRecurso) REFERENCES Recursos(IdRecursos) ON DELETE CASCADE" +
                 ");");
 
+        // Ajustes Preferencias de usuario
+        db.execSQL("CREATE TABLE PreferenciaUsuario (" +
+                "IdPreferencia INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "IdUsuario INTEGER NOT NULL UNIQUE, " +
+                "Notificaciones INTEGER NOT NULL DEFAULT 1, " +
+                "Recordatorios INTEGER NOT NULL DEFAULT 1, " +
+                "Sonido INTEGER NOT NULL DEFAULT 1, " +
+                "Vibracion INTEGER NOT NULL DEFAULT 1, " +
+                "Tema TEXT NOT NULL DEFAULT 'CLARO' " +
+                "CHECK (Tema IN ('CLARO', 'OSCURO')), " +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE" +
+                ");");
+
         insertarDatosIniciales(db);
     }
 
@@ -114,16 +127,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert("Recursos", null, cv);
     }
 
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS Favoritos");
-        db.execSQL("DROP TABLE IF EXISTS Recursos");
-        db.execSQL("DROP TABLE IF EXISTS Usuarios");
-        db.execSQL("DROP TABLE IF EXISTS ConsultasChat");
-        db.execSQL("DROP TABLE IF EXISTS Tareas");
-        db.execSQL("DROP TABLE IF EXISTS Favoritos");
-        db.execSQL("DROP TABLE IF EXISTS Recursos");
-        db.execSQL("DROP TABLE IF EXISTS Usuarios");
-        onCreate(db);
+
+        if (oldVersion < 5) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS PreferenciaUsuario (" +
+                    "IdPreferencia INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "IdUsuario INTEGER NOT NULL UNIQUE, " +
+                    "Notificaciones INTEGER NOT NULL DEFAULT 1, " +
+                    "Recordatorios INTEGER NOT NULL DEFAULT 1, " +
+                    "Sonido INTEGER NOT NULL DEFAULT 1, " +
+                    "Vibracion INTEGER NOT NULL DEFAULT 1, " +
+                    "Tema TEXT NOT NULL DEFAULT 'CLARO' " +
+                    "CHECK (Tema IN ('CLARO', 'OSCURO')), " +
+                    "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE" +
+                    ");");
+        }
     }
 }

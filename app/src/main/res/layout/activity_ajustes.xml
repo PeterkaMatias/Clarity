@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/fondo_app">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Encabezado -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajustes y preferencias"
+            android:textColor="@color/gris_texto"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Personalizá Conexa para que se adapte a tus necesidades."
+            android:textColor="@color/gris_texto"
+            android:textSize="16sp"
+            android:alpha="0.85"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Tema -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Apariencia"
+            android:textColor="@color/verde_principal"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@color/blanco_superficie"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tema de la aplicación"
+                android:textColor="@color/gris_texto"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/rgTema"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
+
+                <RadioButton
+                    android:id="@+id/rbTemaClaro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Modo claro"
+                    android:textColor="@color/gris_texto"
+                    android:buttonTint="@color/verde_principal" />
+
+                <RadioButton
+                    android:id="@+id/rbTemaOscuro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Modo oscuro"
+                    android:textColor="@color/gris_texto"
+                    android:buttonTint="@color/verde_principal" />
+
+            </RadioGroup>
+        </LinearLayout>
+
+        <!-- Notificaciones y recordatorios -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Notificaciones y recordatorios"
+            android:textColor="@color/verde_principal"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@color/blanco_superficie"
+            android:layout_marginBottom="24dp">
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/swNotificaciones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:text="Activar notificaciones"
+                android:textColor="@color/gris_texto"
+                android:textSize="16sp"
+                android:thumbTint="@color/verde_principal"
+                android:trackTint="@color/verde_secundario" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/arena_decorativo" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/swRecordatorios"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:text="Activar recordatorios de tareas"
+                android:textColor="@color/gris_texto"
+                android:textSize="16sp"
+                android:thumbTint="@color/verde_principal"
+                android:trackTint="@color/verde_secundario" />
+
+        </LinearLayout>
+
+        <!-- Sonido y vibración -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sonido y vibración"
+            android:textColor="@color/verde_principal"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@color/blanco_superficie"
+            android:layout_marginBottom="28dp">
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/swSonido"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:text="Sonido"
+                android:textColor="@color/gris_texto"
+                android:textSize="16sp"
+                android:thumbTint="@color/verde_principal"
+                android:trackTint="@color/verde_secundario" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/arena_decorativo" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/swVibracion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:text="Vibración"
+                android:textColor="@color/gris_texto"
+                android:textSize="16sp"
+                android:thumbTint="@color/verde_principal"
+                android:trackTint="@color/verde_secundario" />
+
+        </LinearLayout>
+
+        <!-- Acciones -->
+        <Button
+            android:id="@+id/btnGuardar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="52dp"
+            android:text="Guardar preferencias"
+            android:textColor="@color/blanco_superficie"
+            android:backgroundTint="@color/verde_principal"
+            android:textAllCaps="false"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/btnRestaurar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="52dp"
+            android:text="Restaurar valores predeterminados"
+            android:textColor="@color/gris_texto"
+            android:backgroundTint="@color/verde_secundario"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+</ScrollView>

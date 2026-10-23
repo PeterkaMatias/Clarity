@@ -1,106 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/fondo_app">
 
-    <!-- Encabezado -->
-    <TextView
-        android:id="@+id/tvHeaderRecursos"
+    <!-- Encabezado  -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="24dp"
-        android:paddingBottom="8dp"
-        android:text="Centro de Recursos"
-        android:textColor="@color/gris_texto"
-        android:textSize="26sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp">
 
-    <!-- Buscador por palabra clave -->
+        <TextView
+            android:id="@+id/tvHeaderRecursos"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Centro de Recursos"
+            android:textColor="@color/gris_texto"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnAbrirAjustes"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
+            android:src="@drawable/ic_settings"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Abrir ajustes y preferencias"
+            android:scaleType="fitCenter"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="@color/verde_principal" />
+
+    </LinearLayout>
+
+    <!-- Buscador de recursos -->
     <androidx.appcompat.widget.SearchView
         android:id="@+id/searchViewRecursos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_search_card"
-        app:iconifiedByDefault="false"
-        app:queryHint="Buscar artículos o estrategias..." />
+        android:background="@color/blanco_superficie"
+        android:queryHint="Buscar recursos..." />
 
-    <!-- Filtros de categorías horizontales (Chips) -->
+    <!-- Categorías desplazables horizontalmente -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fillViewport="false"
         android:scrollbars="none"
-        android:paddingHorizontal="16dp"
-        android:layout_marginBottom="8dp">
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupCategorias"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:singleSelection="true">
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:chipSpacingHorizontal="8dp">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipTodas"
-                style="@style/Widget.Material3.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:checkable="true"
                 android:checked="true"
-                android:text="Todas" />
+                android:text="Todas"
+                android:textColor="@color/gris_texto"
+                app:chipBackgroundColor="@color/verde_secundario"
+                app:checkedIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipDisfuncion"
-                style="@style/Widget.Material3.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Disfunción Ejecutiva" />
+                android:checkable="true"
+                android:text="Atención"
+                android:textColor="@color/gris_texto"
+                app:chipBackgroundColor="@color/blanco_superficie"
+                app:checkedIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipTiempo"
-                style="@style/Widget.Material3.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ceguera del Tiempo" />
+                android:checkable="true"
+                android:text="Gestión del tiempo"
+                android:textColor="@color/gris_texto"
+                app:chipBackgroundColor="@color/blanco_superficie"
+                app:checkedIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipEstudio"
-                style="@style/Widget.Material3.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Técnicas de Estudio" />
+                android:checkable="true"
+                android:text="Estudio"
+                android:textColor="@color/gris_texto"
+                app:chipBackgroundColor="@color/blanco_superficie"
+                app:checkedIconVisible="false" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipPadres"
-                style="@style/Widget.Material3.Chip.Filter"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Guía para Padres" />
+                android:checkable="true"
+                android:text="Padres"
+                android:textColor="@color/gris_texto"
+                app:chipBackgroundColor="@color/blanco_superficie"
+                app:checkedIconVisible="false" />
+
         </com.google.android.material.chip.ChipGroup>
+
     </HorizontalScrollView>
 
-    <!-- Lista de articulos -->
+    <!-- Lista de recursos -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRecursos"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
         android:paddingBottom="16dp" />
 
-    <!-- Error Handling -->
+    <!-- Mensaje cuando no hay resultados -->
     <TextView
         android:id="@+id/tvSinResultados"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:gravity="center"
-        android:padding="32dp"
-        android:text="No se encontraron recursos para esa búsqueda.\nProbá seleccionando otra categoría."
+        android:padding="24dp"
+        android:text="No se encontraron recursos."
         android:textColor="@color/gris_texto"
         android:textSize="16sp"
         android:visibility="gone" />

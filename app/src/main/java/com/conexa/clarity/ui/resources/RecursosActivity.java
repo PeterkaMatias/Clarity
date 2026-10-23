@@ -37,6 +37,15 @@ public class RecursosActivity extends AppCompatActivity implements RecursosAdapt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recursos);
 
+        findViewById(R.id.btnAbrirAjustes).setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    RecursosActivity.this,
+                    com.conexa.clarity.ui.settings.AjustesActivity.class
+            );
+
+            startActivity(intent);
+        });
+
         recursoDao = new RecursoDao(this);
 
         rvRecursos = findViewById(R.id.rvRecursos);
