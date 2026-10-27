@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/fondo_app"
+    android:padding="20dp">
+
+    <!--Encabezado -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Desglosar con IA"
+        android:textColor="@color/gris_texto"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dividi esta tarea en pasos alcanzables para reducir la sobrecarga."
+        android:textColor="@color/gris_texto"
+        android:textSize="13sp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="16dp" />
+    <!-- Tarjeta con el Titulo de la Tarea Original -->
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardBackgroundColor="@color/blanco_superficie"
+        app:strokeColor="@color/verde_secundario"
+        app:strokeWidth="1dp"
+        android:layout_marginBottom="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TAREA ORIGINAL"
+                android:textStyle="bold"
+                android:textSize="11sp"
+                android:textColor="@color/verde_principal" />
+            <TextView
+                android:id="@+id/tvTituloTareaPadre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Preparar informe mensual"
+                android:textColor="@color/gris_texto"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp" />
+
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Selector de nivel de detalle (Chips: 3 pasos o 5 pasos)-->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nivel de detalle:"
+        android:textStyle="bold"
+        android:textColor="@color/gris_texto"
+        android:textSize="14sp"
+        android:layout_marginTop="6dp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupCantidadPasos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        android:layout_marginBottom="14dp">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip3Pasos"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="3 micro-pasos (Rapido)" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip5Pasos"
+            style="@style/Widget.Material3.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5 micro-pasos (Detallado)" />
+    </com.google.android.material.chip.ChipGroup>
+
+<!-- Boton Generar Pasos-->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGenerarPasos"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Generar Pasos con Claude"
+        android:textColor="@color/blanco_superficie"
+        android:textStyle="bold"
+        android:textSize="15sp"
+        app:backgroundTint="@color/verde_principal"
+        app:cornerRadius="10dp"
+        android:layout_marginBottom="12dp" />
+    <!-- Barra de Carga (oculta por defecto)-->
+
+    <ProgressBar
+        android:id="@+id/pbCargandoIA"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/verde_principal"
+        android:visibility="gone"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Contenedor de la lista preliminar-->
+    <LinearLayout
+        android:id="@+id/layoutListaPreliminar"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:visibility="gone" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Micro-pasos sugeridos (editables):"
+                android:textStyle="bold"
+                android:textColor="@color/gris_texto"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAgregarPasoManual"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+ Agregar paso"
+                android:textSize="12sp"
+                android:textColor="@color/verde_principal" />
+
+        </LinearLayout>
+        <!-- RecyclerView con los pasos editables-->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPasosPreliminares"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
+
+        <!-- Boton Aceptar y Guardar Pasis-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAceptarPasos"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Aceptar y Guardar Micro-Pasos"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/blanco_superficie"
+            app:backgroundTint="@color/verde_principal"
+            app:cornerRadius="10dp"
+            android:layout_marginTop="8dp" />
+
+
+    </LinearLayout>
+</LinearLayout>

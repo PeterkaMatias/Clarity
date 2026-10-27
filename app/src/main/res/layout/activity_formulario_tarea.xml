@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Titulo superior dinamico (Nueva Tarea / Editar Tarea) -->
+        <TextView
+            android:id="@+id/tvTituloPantalla"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nueva Tarea"
+            android:textColor="@color/gris_texto"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp" />
+
+        <!-- 1. Campo: Titulo -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxBackgroundColor="@color/blanco_superficie"
+            app:boxCornerRadiusBottomEnd="8dp"
+            app:boxCornerRadiusBottomStart="8dp"
+            app:boxCornerRadiusTopEnd="8dp"
+            app:boxCornerRadiusTopStart="8dp"
+            app:boxStrokeColor="@color/verde_principal">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTituloTarea"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Titulo de la tarea *"
+                android:inputType="textCapSentences"
+                android:textColor="@color/gris_texto" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!--2. Campo: Descripcion -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxBackgroundColor="@color/blanco_superficie"
+            app:boxCornerRadiusBottomEnd="8dp"
+            app:boxCornerRadiusBottomStart="8dp"
+            app:boxCornerRadiusTopEnd="8dp"
+            app:boxCornerRadiusTopStart="8dp"
+            app:boxStrokeColor="@color/verde_principal">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDescripcionTarea"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Descripcion o notas (opcional)"
+                android:gravity="top|start"
+                android:inputType="textMultiLine"
+                android:minLines="3"
+                android:textColor="@color/gris_texto" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 3. Selector de prioridad -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prioridad"
+            android:textStyle="bold"
+            android:textColor="@color/gris_texto"
+            android:textSize="14sp"
+            android:layout_marginBottom="6dp"/>
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupFormPrioridad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFormBaja"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Baja" />
+
+            <!-- android:checked"true" para que venga seleccionada por defecto al crear una nueva tarea-->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFormMedia"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Media" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFormAlta"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alta" />
+        </com.google.android.material.chip.ChipGroup>
+
+        <!-- 4. Selector de fecha y hora de vencimiento -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fecha y hora de vencimiento"
+            android:textStyle="bold"
+            android:textColor="@color/gris_texto"
+            android:textSize="14sp"
+            android:layout_marginBottom="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSeleccionarFecha"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="Seleccionar Fecha"
+                android:textColor="@color/verde_principal"
+                app:strokeColor="@color/verde_principal" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSeleccionarHora"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="Hora (Opcional)"
+                android:textColor="@color/verde_principal"
+                app:strokeColor="@color/verde_principal" />
+        </LinearLayout>
+
+        <!-- Texto que muestra la fecha seleccionada-->
+        <TextView
+            android:id="@+id/tvFechaSeleccionada"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sin fecha limite"
+            android:textColor="@color/gris_texto"
+            android:textSize="13sp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 5. Switch de Recordatorios -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchRecordatorio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Activar recordatorio / notificacion"
+            android:textColor="@color/gris_texto"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- 6. BOTON DESCATACADO: Desglosar con IA-->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="@color/arena_decorativo"
+            app:strokeColor="@color/verde_secundario"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="¿La tarea parece abrumadora?"
+                    android:textStyle="bold"
+                    android:textColor="@color/gris_texto"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dividila en micro-pasos simples para arrancar sin estres con ayuda de Claude."
+                    android:textColor="@color/gris_texto"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDesglosarIA"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Desglosar con IA"
+                    android:textColor="@color/blanco_superficie"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/verde_principal"
+                    app:cornerRadius="10dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 7. Boton Guardar Tarea-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarTarea"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Guardar Tarea"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/blanco_superficie"
+            app:backgroundTint="@color/verde_principal"
+            app:cornerRadius="10dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- 8. Boton Eliminar Tarea (solo visible en modo edicion)-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEliminarTarea"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Eliminar esta tarea"
+            android:textColor="#C94A4A"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>
