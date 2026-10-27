@@ -83,11 +83,19 @@ public class UsuarioDao {
 
     // Convierte una fila de la base en un objeto Usuario
     private Usuario mapear(Cursor c) {
+        int puntosIndex = c.getColumnIndex("PuntosTotales");
+        int nivelIndex = c.getColumnIndex("Nivel");
+
+        int puntos = (puntosIndex != -1) ? c.getInt(puntosIndex) : 0;
+        int nivel = (nivelIndex != -1) ? c.getInt(nivelIndex) : 1;
+
         return new Usuario(
                 c.getInt(c.getColumnIndexOrThrow("IdUsuario")),
                 c.getString(c.getColumnIndexOrThrow("Nombre")),
                 c.getString(c.getColumnIndexOrThrow("Apellido")),
                 c.getString(c.getColumnIndexOrThrow("Email")),
-                c.getString(c.getColumnIndexOrThrow("TipoPerfil")));
+                c.getString(c.getColumnIndexOrThrow("TipoPerfil")),
+                puntos,
+                nivel);
     }
 }
