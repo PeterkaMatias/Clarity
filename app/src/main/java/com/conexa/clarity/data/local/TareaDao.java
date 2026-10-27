@@ -11,55 +11,148 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TareaDao {
-
     private final DatabaseHelper dbHelper;
-
     public TareaDao(Context context) {
-        dbHelper = DatabaseHelper.getInstance(context);
+        this.dbHelper = DatabaseHelper.getInstance(context);
     }
-
-    public long insertarTarea(int idUsuario, String titulo) {
+    // INSERT
+    public long insertar(Tarea tarea) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("IdUsuario", idUsuario);
-        values.put("Titulo", titulo);
-        values.put("Completada", 0);
-        values.put("CreadaPorIA", 1);
-        return db.insert("Tareas", null, values);
+        ContentValues cv = toContentValues(tarea);
+        return db.insert("Tareas", null, cv);
     }
-
-    public List<Tarea> obtenerTareasPorUsuario(int idUsuario) {
-        List<Tarea> lista = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-
-        // Leemos las columnas que definió tu compañero
-        Cursor cursor = db.query(
-                "Tareas",
-                null,
-                "IdUsuario = ?",
-                new String[]{String.valueOf(idUsuario)},
-                null, null, null
+    // SELECT
+    /** Devuelve tareas principales del usuario ordenadas por fecha de vencimiento */
+    public List<Tarea> obtenerPrincipales(int idUsuario){
+        return consultar(
+                "SELECT * FROM Tareas WHERE idUsuario = ? AND IdTareaPadre IS NULL ORDER BY Fecha_vencimiento ASC",
+                new String[]{ String.valueOf(idUsuario) }
         );
 
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                int id = cursor.getInt(cursor.getColumnIndexOrThrow("IdTareas"));
-                String titulo = cursor.getString(cursor.getColumnIndexOrThrow("Titulo"));
-                boolean completada = cursor.getInt(cursor.getColumnIndexOrThrow("Completada")) == 1;
-                boolean creadaPorIA = cursor.getInt(cursor.getColumnIndexOrThrow("CreadaPorIA")) == 1;
+    }
 
-                lista.add(new Tarea(id, idUsuario, titulo, completada, creadaPorIA));
-            } while (cursor.moveToNext());
-            cursor.close();
+    /** Devuelve tareas principales filtradas por estado (PENDIENTE, EN_PROGRESO, COMPLETADA) */
+    public List<Tarea> obtenerPorEstado(int idUsuario, String estado){
+        return consultar(
+                "SELECT * FROM Tareas WHERE idUsuario = ? AND Estado = ? AND IdTareaPadre IS NULL ORDER BY Fecha_vencimiento ASC",
+                new String[] { String.valueOf(idUsuario), estado }
+        );
+
+    }
+    /** Devuelve los micro-pasos (subtareas) de una tarea padre */
+    public List<Tarea> obtenerSubtareas(int idTareaPadre){
+        return consultar(
+                "SELECT * FROM Tareas WHERE IdTareaPadre = ? ORDER BY idTarea ASC",
+                new String[]{ String.valueOf(idTareaPadre)}
+        );
+    }
+
+    /** Cuenta subtareas completadas de una tarea padre (para calcular progreso) */
+    public int contarSubtareasCompletadas(int idTareaPadre){
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        try (Cursor c = db.rawQuery("SELECT COUNT(*) FROM Tareas WHERE IdTareaPadre = ? AND Estado = 'COMPLETADA'",
+                new String[]{ String.valueOf(idTareaPadre) })) {
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        }
+    }
+
+    /** Cuenta total de subtareas de una tarea padre */
+    public int contarSubtareas(int idTareaPadre) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        try (Cursor c = db.rawQuery( "SELECT COUNT(*) FROM Tareas WHERE IdTareaPadre = ?",
+                new String[]{ String.valueOf(idTareaPadre) })) {
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        }
+    }
+
+    // UPDATE
+    public boolean actualizar(Tarea tarea) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = toContentValues(tarea);
+        int filas = db.update("Tareas", cv, "idTarea = ?",
+                new String[]{ String.valueOf(tarea.getIdTarea()) });
+        return filas > 0;
+    }
+
+    public boolean cambiarEstado(int idTarea, String nuevoEstado, String fechaFinalizado){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("Estado", nuevoEstado);
+        if(fechaFinalizado != null){
+            cv.put("Fecha_finalizado", fechaFinalizado);
+        } else {
+            cv.putNull("Fecha_finalizado");
+        }
+        int filas = db.update("Tareas", cv, "idTarea = ?",
+                new String[]{ String.valueOf(idTarea) });
+        return filas > 0;
+    }
+
+    // DELETE
+    public boolean eliminar(int idTarea) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int filas = db.delete("Tareas", "idTarea = ?",
+                new String[]{ String.valueOf(idTarea) });
+        return filas > 0;
+    }
+    // ===== Compatibilidad con el Dashboard (MainActivity) =====
+    /** Usado por MainActivity: devuelve las tareas principales del usuario */
+    public List<Tarea> obtenerTareasPorUsuario(int idUsuario) {
+        return obtenerPrincipales(idUsuario);
+    }
+
+    /** Usado por MainActivity: marca una tarea como completada o pendiente */
+    public boolean actualizarCompletada(int idTarea, boolean completada) {
+        String fecha = completada
+                ? new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
+                .format(new java.util.Date())
+                : null;
+        return cambiarEstado(idTarea, completada ? Tarea.ESTADO_COMPLETADA : Tarea.ESTADO_PENDIENTE, fecha);
+    }
+
+    // HELPERS PRIVADOS
+    private List<Tarea> consultar(String sql, String[] args) {
+        List<Tarea> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        try (Cursor c = db.rawQuery(sql, args)){
+            while (c.moveToNext()) {
+                lista.add(mapear(c));
+            }
         }
         return lista;
     }
 
-    public int actualizarCompletada(int idTarea, boolean completada) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("Completada", completada ? 1 : 0);
+    private Tarea mapear(Cursor c){
+        Tarea t = new Tarea();
+        t.setIdTarea(c.getInt(c.getColumnIndexOrThrow("idTarea")));
+        t.setIdUsuario(c.getInt(c.getColumnIndexOrThrow("idUsuario")));
+        t.setTitulo(c.getString(c.getColumnIndexOrThrow("Titulo")));
+        t.setDescripcion(c.getString(c.getColumnIndexOrThrow("Descripcion")));
+        t.setEstado(c.getString(c.getColumnIndexOrThrow("Estado")));
+        t.setPrioridad(c.getString(c.getColumnIndexOrThrow("Prioridad")));
+        t.setFechaCreacion(c.getString(c.getColumnIndexOrThrow("Fecha_creacion")));
+        t.setFechaFinalizado(c.getString(c.getColumnIndexOrThrow("Fecha_finalizado")));
+        t.setFechaVencimiento(c.getString(c.getColumnIndexOrThrow("Fecha_vencimiento")));
+        int padre = c.getColumnIndex("IdTareaPadre");
+        t.setIdTareaPadre(c.isNull(padre) ? 0 : c.getInt(padre));
+        return t;
+    }
 
-        return db.update("Tareas", values, "IdTareas = ?", new String[]{String.valueOf(idTarea)});
+    private ContentValues toContentValues(Tarea t){
+        ContentValues cv = new ContentValues();
+        cv.put("idUsuario", t.getIdUsuario());
+        cv.put("Titulo", t.getTitulo());
+        cv.put("Descripcion", t.getDescripcion());
+        cv.put("Estado" , t.getEstado());
+        cv.put("Prioridad", t.getPrioridad());
+        cv.put("Fecha_creacion", t.getFechaCreacion());
+        cv.put("Fecha_finalizado", t.getFechaFinalizado());
+        cv.put("Fecha_vencimiento", t.getFechaVencimiento());
+        if (t.esMicroPaso()){
+            cv.put("IdTareaPadre", t.getIdTareaPadre());
+        } else {
+            cv.putNull("IdTareaPadre");
+        }
+        return cv;
     }
 }

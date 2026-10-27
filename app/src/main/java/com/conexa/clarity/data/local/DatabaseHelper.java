@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "clarity.db";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
 
     private static DatabaseHelper instance;
 
@@ -32,7 +32,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Usuarios (nuevo)
+        // Usuarios
         db.execSQL("CREATE TABLE Usuarios (" +
                 "IdUsuario INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "Nombre TEXT NOT NULL, " +
@@ -45,14 +45,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "Nivel INTEGER NOT NULL DEFAULT 1" +
                 ");");
 
-        // Tareas
-        db.execSQL("CREATE TABLE Tareas (" +
-                "IdTarea INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                "IdUsuario INTEGER NOT NULL, " +
+        // Tareas (versión completa de Rodrigo con Estado, Prioridad, Fechas y micro-pasos)
+        db.execSQL("CREATE TABLE Tareas(" +
+                "idTarea INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "idUsuario INTEGER NOT NULL," +
                 "Titulo TEXT NOT NULL, " +
-                "Completada INTEGER NOT NULL DEFAULT 0, " +
-                "CreadaPorIA INTEGER NOT NULL DEFAULT 0, " +
-                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE" +
+                "Descripcion TEXT, " +
+                "Estado TEXT NOT NULL DEFAULT 'PENDIENTE' " +
+                " CHECK (Estado IN ('PENDIENTE','EN_PROGRESO','COMPLETADA')), " +
+                "Prioridad TEXT NOT NULL DEFAULT 'MEDIA' " +
+                " CHECK (Prioridad IN ('ALTA','MEDIA','BAJA'))," +
+                "Fecha_creacion TEXT," +
+                "Fecha_finalizado TEXT, " +
+                "Fecha_vencimiento TEXT, " +
+                "IdTareaPadre INTEGER, " +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE, " +
+                "FOREIGN KEY (IdTareaPadre) REFERENCES Tareas(IdTarea) ON DELETE CASCADE" +
                 ");");
 
         // Consultas con el Chat
@@ -130,19 +138,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        if (oldVersion < 5) {
-            db.execSQL("CREATE TABLE IF NOT EXISTS PreferenciaUsuario (" +
-                    "IdPreferencia INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "IdUsuario INTEGER NOT NULL UNIQUE, " +
-                    "Notificaciones INTEGER NOT NULL DEFAULT 1, " +
-                    "Recordatorios INTEGER NOT NULL DEFAULT 1, " +
-                    "Sonido INTEGER NOT NULL DEFAULT 1, " +
-                    "Vibracion INTEGER NOT NULL DEFAULT 1, " +
-                    "Tema TEXT NOT NULL DEFAULT 'CLARO' " +
-                    "CHECK (Tema IN ('CLARO', 'OSCURO')), " +
-                    "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE" +
-                    ");");
-        }
+        // Estrategia segura: recrear todas las tablas
+        db.execSQL("DROP TABLE IF EXISTS PreferenciaUsuario");
+        db.execSQL("DROP TABLE IF EXISTS ConsultasChat");
+        db.execSQL("DROP TABLE IF EXISTS Tareas");
+        db.execSQL("DROP TABLE IF EXISTS Favoritos");
+        db.execSQL("DROP TABLE IF EXISTS Recursos");
+        db.execSQL("DROP TABLE IF EXISTS Usuarios");
+        onCreate(db);
     }
 }

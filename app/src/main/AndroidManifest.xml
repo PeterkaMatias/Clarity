@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Clarity">
 
+        <!-- Módulo Tareas (Rodrigo) -->
+        <activity
+            android:name=".ui.tareas.TareasActivity"
+            android:exported="false" />
+
         <!-- Dashboard principal -->
         <activity
             android:name=".MainActivity"
@@ -54,6 +59,18 @@
         <activity
             android:name=".ui.settings.AjustesActivity"
             android:exported="false" />
+
+        <!-- Formulario crear/editar tarea (Rodrigo) -->
+        <activity
+            android:name=".ui.tareas.FormularioTareaActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Desglose IA de tarea (Rodrigo) -->
+        <activity
+            android:name=".ui.tareas.DesgloseTareaActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
     </application>
 
