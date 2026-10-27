@@ -3,22 +3,22 @@
 
     <item
         android:id="@+id/nav_inicio"
-        android:icon="@android:drawable/ic_menu_view"
+        android:icon="@drawable/ic_launcher_foreground"
         android:title="Inicio" />
 
     <item
-        android:id="@+id/nav_dia"
-        android:icon="@android:drawable/ic_menu_today"
-        android:title="Mi día" />
+        android:id="@+id/nav_timer"
+        android:icon="@drawable/ic_temporizador"
+        android:title="Enfoque" />
 
     <item
         android:id="@+id/nav_chat"
-        android:icon="@android:drawable/ic_dialog_email"
-        android:title="Chat" />
+        android:icon="@drawable/ic_lumi"
+        android:title="Chatbot" />
 
     <item
-        android:id="@+id/nav_perfil"
-        android:icon="@android:drawable/ic_menu_myplaces"
-        android:title="Perfil" />
+        android:id="@+id/nav_recursos"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Recursos" />
 
 </menu>

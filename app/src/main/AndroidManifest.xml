@@ -14,18 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Clarity">
 
-        <activity
-        android:name=".ui.chat.ChatActivity"
-        android:exported="false" />
-
+        <!-- Dashboard principal -->
         <activity
             android:name=".MainActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <!-- TEMPORAL: el registro es la pantalla de inicio (en la etapa 4 pasa a ser el login) -->
-        <activity
-            android:name=".ui.auth.RegistroActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -34,11 +25,32 @@
             </intent-filter>
         </activity>
 
-        <!-- Pantalla principal de Recursos -->
+        <!-- Autenticación y Registro -->
+        <activity
+            android:name=".ui.auth.RegistroActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Chatbot / Asistente Virtual -->
+        <activity
+            android:name=".ui.chat.ChatActivity"
+            android:exported="false" />
+
+        <!-- Temporizador de Concentración (Focus Timer) -->
+        <activity
+            android:name=".ui.timer.FocusTimerActivity"
+            android:exported="false" />
+
+        <!-- Centro de Recursos y Detalle de Lectura -->
         <activity
             android:name=".ui.resources.RecursosActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.resources.DetalleRecursoActivity"
+            android:exported="false" />
+
+        <!-- Ajustes y Accesibilidad -->
         <activity
             android:name=".ui.settings.AjustesActivity"
             android:exported="false" />
