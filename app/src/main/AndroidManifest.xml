@@ -19,9 +19,9 @@
             android:name=".ui.tareas.TareasActivity"
             android:exported="false" />
 
-        <!-- Dashboard principal -->
+        <!-- Pantalla de inicio: login -->
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.auth.LoginActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -29,6 +29,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Dashboard principal -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Autenticación y Registro -->
         <activity

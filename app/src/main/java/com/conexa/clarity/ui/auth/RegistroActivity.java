@@ -12,7 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.conexa.clarity.R;
 import com.conexa.clarity.data.local.UsuarioDao;
 import com.conexa.clarity.data.model.Usuario;
-import com.conexa.clarity.ui.resources.RecursosActivity;
+import com.conexa.clarity.MainActivity;
+import com.conexa.clarity.util.SesionUsuario;
 
 public class RegistroActivity extends AppCompatActivity {
 
@@ -73,11 +74,11 @@ public class RegistroActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "¡Cuenta creada! Bienvenido/a, " + nombre, Toast.LENGTH_SHORT).show();
 
-            // Pasamos a Recursos y le avisamos qué usuario es
-            Intent intent = new Intent(this, RecursosActivity.class);
-            intent.putExtra("id_usuario", (int) id);
+            // Guardamos quién es y pasamos al dashboard
+            SesionUsuario.guardar(this, (int) id);
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
-            finish();
         }
     }
 }
