@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@color/fondo_app"
-    android:scrollbars="vertical">
+    android:background="@color/fondo_app">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="80dp"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -284,6 +290,7 @@
                     android:id="@+id/tareasMensaje"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
                     android:textSize="16sp"
                     android:text="Avanzar despacio. Tambien es avanzar." />
 
@@ -294,4 +301,9 @@
 
 
     </LinearLayout>
-</ScrollView>
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        layout="@layout/activity_barra_navegacion" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

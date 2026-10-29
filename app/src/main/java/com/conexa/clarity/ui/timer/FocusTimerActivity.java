@@ -4,10 +4,27 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import com.conexa.clarity.R;
 import android.widget.Button;
+
+import com.conexa.clarity.data.local.TareaDao;
+import com.conexa.clarity.data.model.Tarea;
 import com.google.android.material.button.MaterialButton;
+
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.content.Intent;
+
+import com.conexa.clarity.MainActivity;
+import com.conexa.clarity.ui.chat.ChatActivity;
+import com.conexa.clarity.ui.resources.RecursosActivity;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class FocusTimerActivity extends AppCompatActivity {
     private boolean estaCorriendo = false;
@@ -18,6 +35,14 @@ public class FocusTimerActivity extends AppCompatActivity {
     private Button botonComenzar;
     private CountDownTimer temporizador;
     private Button botonReiniciar;
+    private TareaDao tareaDao;
+    private List<Tarea> tareasPendientes;
+    private Tarea tareaSeleccionada;
+    private TextView tvTituloTarea;
+    private TextView tvSubtituloTarea;
+    private View cardTareaSeleccionada;
+    private final int idUsuarioActual = 1;
+    private BottomNavigationView bottomNav;
 
 
     private long tiempoRestante = tiempoSeleccionado;
@@ -27,6 +52,19 @@ public class FocusTimerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_focus_timer);
+        bottomNav = findViewById(R.id.bottomNavigationView);
+        configurarNavegacion();
+
+        tareaDao = new TareaDao(this);
+
+        tvTituloTarea = findViewById(R.id.tvTituloTarea);
+        tvSubtituloTarea = findViewById(R.id.tvSubtituloTarea);
+        cardTareaSeleccionada = findViewById(R.id.cardTareaSeleccionada);
+
+        cargarTareasPendientes();
+
+        cardTareaSeleccionada.setOnClickListener(v -> mostrarSelectorTareas());
+
         tvTiempoRestante = findViewById(R.id.tvTiempoRestante);
         boton5min = findViewById(R.id.boton5Min);
         boton15min = findViewById(R.id.boton15Min);
@@ -133,5 +171,76 @@ public class FocusTimerActivity extends AppCompatActivity {
         boton5min.setEnabled(habilitar);
         boton15min.setEnabled(habilitar);
         boton25min.setEnabled(habilitar);
+    }
+    private void cargarTareasPendientes(){
+        List<Tarea> todasLasTareas =
+                tareaDao.obtenerTareasPorUsuario(idUsuarioActual);
+        tareasPendientes = new ArrayList<>();
+
+        for (Tarea tarea : todasLasTareas){
+            if (!tarea.isCompletada()){
+                tareasPendientes.add(tarea);
+            }
+        }
+    }
+
+    private void mostrarSelectorTareas() {
+        if (tareasPendientes == null || tareasPendientes.isEmpty()) {
+            Toast.makeText(
+                    this,
+                    "No hay tareas pendientes para seleccionar",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+        String[] titulos = new String[tareasPendientes.size()];
+
+        for (int i = 0; i < tareasPendientes.size(); i++) {
+            titulos[i] = tareasPendientes.get(i).getTitulo();
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Seleccionar tarea")
+                .setItems(titulos, (dialog, posicion) -> {
+                    tareaSeleccionada = tareasPendientes.get(posicion);
+
+                    tvTituloTarea.setText(tareaSeleccionada.getTitulo());
+                    tvSubtituloTarea.setText(
+                            "Tarea seleccionada para esta sesión"
+                    );
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+
+    }
+    private void configurarNavegacion() {
+        if (bottomNav == null) return;
+
+        bottomNav.setSelectedItemId(R.id.nav_timer);
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_inicio) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+                return true;
+
+            } else if (itemId == R.id.nav_chat) {
+                startActivity(new Intent(this, ChatActivity.class));
+                finish();
+                return true;
+
+            } else if (itemId == R.id.nav_recursos) {
+                startActivity(new Intent(this, RecursosActivity.class));
+                finish();
+                return true;
+
+            } else if (itemId == R.id.nav_timer) {
+                return true;
+            }
+
+            return false;
+        });
     }
 }
