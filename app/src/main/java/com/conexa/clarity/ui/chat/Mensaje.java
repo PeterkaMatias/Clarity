@@ -2,7 +2,7 @@ package com.conexa.clarity.ui.chat;
 
 public class Mensaje {
 
-    private final String texto;
+    private String texto;
     private final boolean delUsuario;
 
     public Mensaje(
@@ -14,10 +14,19 @@ public class Mensaje {
     }
 
     public String getTexto() {
+
         return texto;
     }
 
+    public void setTexto(
+            String texto
+    ) {
+
+        this.texto = texto;
+    }
+
     public boolean esDelUsuario() {
+
         return delUsuario;
     }
 }

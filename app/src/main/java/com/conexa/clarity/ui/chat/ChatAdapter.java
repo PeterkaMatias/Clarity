@@ -1,9 +1,13 @@
 package com.conexa.clarity.ui.chat;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -61,7 +65,9 @@ public class ChatAdapter
                     false
             );
 
-            return new UsuarioViewHolder(view);
+            return new UsuarioViewHolder(
+                    view
+            );
         }
 
         View view = inflater.inflate(
@@ -70,7 +76,9 @@ public class ChatAdapter
                 false
         );
 
-        return new LumiViewHolder(view);
+        return new LumiViewHolder(
+                view
+        );
     }
 
     @Override
@@ -91,9 +99,7 @@ public class ChatAdapter
                     mensaje.getTexto()
             );
 
-        } else if (
-                holder instanceof LumiViewHolder
-        ) {
+        } else if (holder instanceof LumiViewHolder) {
 
             LumiViewHolder lumiHolder =
                     (LumiViewHolder) holder;
@@ -101,7 +107,72 @@ public class ChatAdapter
             lumiHolder.tvMensajeLumi.setText(
                     mensaje.getTexto()
             );
+
+            /*
+             * Mantener presionada una respuesta
+             * de Lumi copia el texto completo.
+             */
+            lumiHolder.itemView.setOnLongClickListener(
+                    view -> {
+
+                        copiarTexto(
+                                view.getContext(),
+                                mensaje.getTexto()
+                        );
+
+                        return true;
+                    }
+            );
         }
+    }
+
+    private void copiarTexto(
+            Context context,
+            String texto
+    ) {
+
+        if (texto == null
+                || texto.trim().isEmpty()) {
+
+            return;
+        }
+
+        /*
+         * Evita copiar el mensaje temporal
+         * de la animación.
+         */
+        if (texto.startsWith(
+                "Lumi está pensando"
+        )) {
+
+            return;
+        }
+
+        ClipboardManager clipboardManager =
+                (ClipboardManager)
+                        context.getSystemService(
+                                Context.CLIPBOARD_SERVICE
+                        );
+
+        if (clipboardManager == null) {
+            return;
+        }
+
+        ClipData clipData =
+                ClipData.newPlainText(
+                        "Respuesta de Lumi",
+                        texto
+                );
+
+        clipboardManager.setPrimaryClip(
+                clipData
+        );
+
+        Toast.makeText(
+                context,
+                "Respuesta copiada",
+                Toast.LENGTH_SHORT
+        ).show();
     }
 
     @Override
@@ -113,10 +184,33 @@ public class ChatAdapter
             Mensaje mensaje
     ) {
 
-        mensajes.add(mensaje);
+        mensajes.add(
+                mensaje
+        );
 
         notifyItemInserted(
                 mensajes.size() - 1
+        );
+    }
+
+    public void actualizarMensaje(
+            int posicion,
+            String nuevoTexto
+    ) {
+
+        if (posicion < 0
+                || posicion >= mensajes.size()) {
+
+            return;
+        }
+
+        mensajes.get(posicion)
+                .setTexto(
+                        nuevoTexto
+                );
+
+        notifyItemChanged(
+                posicion
         );
     }
 

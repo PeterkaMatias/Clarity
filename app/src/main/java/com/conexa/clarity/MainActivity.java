@@ -28,7 +28,11 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView tvSaludoUsuario, tvNivelUsuario, tvPuntosTotales, tvSinTareas;
+    private TextView tvSaludoUsuario;
+    private TextView tvNivelUsuario;
+    private TextView tvPuntosTotales;
+    private TextView tvSinTareas;
+
     private RecyclerView rvTareasHoy;
     private BottomNavigationView bottomNav;
     private ImageButton btnAbrirAjustes;
@@ -37,17 +41,22 @@ public class MainActivity extends AppCompatActivity {
     private TareasHomeAdapter adapter;
     private TareaDao tareaDao;
     private UsuarioDao usuarioDao;
+
     private final int idUsuarioActual = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         try {
+
             tareaDao = new TareaDao(this);
             usuarioDao = new UsuarioDao(this);
+
         } catch (Exception e) {
+
             e.printStackTrace();
         }
 
@@ -59,119 +68,351 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         cargarDatosUsuario();
         cargarTareasDelDia();
-    }
 
-    private void inicializarVistas() {
-        tvSaludoUsuario = findViewById(R.id.tvSaludoUsuario);
-        tvNivelUsuario = findViewById(R.id.tvNivelUsuario);
-        tvPuntosTotales = findViewById(R.id.tvPuntosTotales);
-        tvSinTareas = findViewById(R.id.tvSinTareas);
-        rvTareasHoy = findViewById(R.id.rvTareasHoy);
-        bottomNav = findViewById(R.id.bottomNavigationView);
-        btnAbrirAjustes = findViewById(R.id.btnAbrirAjustes);
-        cardFocusRapido = findViewById(R.id.cardFocusRapido);
+        if (bottomNav != null) {
 
-        if (rvTareasHoy != null) {
-            rvTareasHoy.setLayoutManager(new LinearLayoutManager(this));
-            adapter = new TareasHomeAdapter(new ArrayList<>(), (tarea, isChecked, position) -> {
-                if (isChecked && tareaDao != null) {
-                    try {
-                        tarea.setCompletada(true);
-                        tareaDao.actualizarCompletada(tarea.getId(), true);
-                        Toast.makeText(this, "Excelente paso! Tarea cumplida", Toast.LENGTH_SHORT).show();
-                        cargarDatosUsuario();
-                        cargarTareasDelDia();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            rvTareasHoy.setAdapter(adapter);
+            bottomNav.setSelectedItemId(
+                    R.id.nav_inicio
+            );
         }
     }
 
+    private void inicializarVistas() {
+
+        tvSaludoUsuario = findViewById(
+                R.id.tvSaludoUsuario
+        );
+
+        tvNivelUsuario = findViewById(
+                R.id.tvNivelUsuario
+        );
+
+        tvPuntosTotales = findViewById(
+                R.id.tvPuntosTotales
+        );
+
+        tvSinTareas = findViewById(
+                R.id.tvSinTareas
+        );
+
+        rvTareasHoy = findViewById(
+                R.id.rvTareasHoy
+        );
+
+        bottomNav = findViewById(
+                R.id.bottomNavigationView
+        );
+
+        btnAbrirAjustes = findViewById(
+                R.id.btnAbrirAjustes
+        );
+
+        cardFocusRapido = findViewById(
+                R.id.cardFocusRapido
+        );
+
+        /*
+         * Desactiva el óvalo violeta que aparece
+         * detrás del ítem seleccionado.
+         */
+        if (bottomNav != null) {
+
+            bottomNav.setItemActiveIndicatorEnabled(
+                    false
+            );
+        }
+
+        if (rvTareasHoy != null) {
+
+            rvTareasHoy.setLayoutManager(
+                    new LinearLayoutManager(this)
+            );
+
+            adapter = new TareasHomeAdapter(
+                    new ArrayList<>(),
+                    (tarea, isChecked, position) -> {
+
+                        if (isChecked
+                                && tareaDao != null) {
+
+                            try {
+
+                                tarea.setCompletada(true);
+
+                                tareaDao.actualizarCompletada(
+                                        tarea.getId(),
+                                        true
+                                );
+
+                                Toast.makeText(
+                                        this,
+                                        "¡Excelente paso! Tarea cumplida",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                                cargarDatosUsuario();
+                                cargarTareasDelDia();
+
+                            } catch (Exception e) {
+
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+            );
+
+            rvTareasHoy.setAdapter(
+                    adapter
+            );
+        }
+    }
+    private void abrirPantalla(
+            Class<?> pantallaDestino
+    ) {
+
+        Intent intent = new Intent(
+                MainActivity.this,
+                pantallaDestino
+        );
+
+        intent.putExtra(
+                "id_usuario",
+                idUsuarioActual
+        );
+
+        startActivity(intent);
+
+        overridePendingTransition(
+                R.anim.fade_in,
+                R.anim.fade_out
+        );
+
+        finish();
+    }
     private void configurarNavegacion() {
-        if (bottomNav == null) return;
+
+        if (bottomNav == null) {
+            return;
+        }
+
+        bottomNav.setSelectedItemId(
+                R.id.nav_inicio
+        );
 
         bottomNav.setOnItemSelectedListener(item -> {
+
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_inicio) {
+
                 return true;
+
             } else if (itemId == R.id.nav_recursos) {
-                startActivity(new Intent(this, RecursosActivity.class));
+
+                abrirPantalla(
+                        RecursosActivity.class
+                );
+
                 return true;
+
             } else if (itemId == R.id.nav_chat) {
-                startActivity(new Intent(this, ChatActivity.class));
+
+                abrirPantalla(
+                        ChatActivity.class
+                );
+
                 return true;
+
             } else if (itemId == R.id.nav_enfoque) {
-                startActivity(new Intent(this, FocusTimerActivity.class));
+
+                abrirPantalla(
+                        FocusTimerActivity.class
+                );
+
                 return true;
             }
+
             return false;
         });
     }
 
     private void configurarEventos() {
+
         if (btnAbrirAjustes != null) {
-            btnAbrirAjustes.setOnClickListener(v ->
-                    startActivity(new Intent(this, AjustesActivity.class))
+
+            btnAbrirAjustes.setOnClickListener(
+                    view ->
+                            startActivity(
+                                    new Intent(
+                                            this,
+                                            AjustesActivity.class
+                                    )
+                            )
             );
         }
 
         if (cardFocusRapido != null) {
-            cardFocusRapido.setOnClickListener(v ->
-                    startActivity(new Intent(this, FocusTimerActivity.class))
+
+            cardFocusRapido.setOnClickListener(
+                    view -> {
+
+                        Intent intent =
+                                new Intent(
+                                        this,
+                                        FocusTimerActivity.class
+                                );
+
+                        intent.putExtra(
+                                "id_usuario",
+                                idUsuarioActual
+                        );
+
+                        startActivity(intent);
+                    }
             );
         }
     }
 
     private void cargarDatosUsuario() {
+
         try {
+
             if (usuarioDao != null) {
-                Usuario usuario = usuarioDao.obtenerPorId(idUsuarioActual);
-                if (usuario != null && tvSaludoUsuario != null) {
-                    tvSaludoUsuario.setText("Hola, " + usuario.getNombre() + "!");
-                    if (tvNivelUsuario != null) tvNivelUsuario.setText("Modo " + usuario.getTipoPerfil());
-                    if (tvPuntosTotales != null) tvPuntosTotales.setText("✨ Enfoque activo");
+
+                Usuario usuario =
+                        usuarioDao.obtenerPorId(
+                                idUsuarioActual
+                        );
+
+                if (usuario != null
+                        && tvSaludoUsuario != null) {
+
+                    tvSaludoUsuario.setText(
+                            "Hola, " +
+                                    usuario.getNombre() +
+                                    "!"
+                    );
+
+                    if (tvNivelUsuario != null) {
+
+                        tvNivelUsuario.setText(
+                                "Modo " +
+                                        usuario.getTipoPerfil()
+                        );
+                    }
+
+                    if (tvPuntosTotales != null) {
+
+                        tvPuntosTotales.setText(
+                                "✨ Enfoque activo"
+                        );
+                    }
+
                     return;
                 }
             }
+
         } catch (Exception e) {
+
             e.printStackTrace();
         }
 
-        if (tvSaludoUsuario != null) tvSaludoUsuario.setText("Hola!");
-        if (tvNivelUsuario != null) tvNivelUsuario.setText("Bienvenido a Clarity");
-        if (tvPuntosTotales != null) tvPuntosTotales.setText("✨ 0 pts");
+        if (tvSaludoUsuario != null) {
+
+            tvSaludoUsuario.setText(
+                    "¡Hola!"
+            );
+        }
+
+        if (tvNivelUsuario != null) {
+
+            tvNivelUsuario.setText(
+                    "Bienvenido a Clarity"
+            );
+        }
+
+        if (tvPuntosTotales != null) {
+
+            tvPuntosTotales.setText(
+                    "✨ 0 pts"
+            );
+        }
     }
 
     private void cargarTareasDelDia() {
-        List<Tarea> pendientes = new ArrayList<>();
+
+        List<Tarea> pendientes =
+                new ArrayList<>();
+
         try {
+
             if (tareaDao != null) {
-                List<Tarea> todas = tareaDao.obtenerTareasPorUsuario(idUsuarioActual);
+
+                List<Tarea> todas =
+                        tareaDao.obtenerTareasPorUsuario(
+                                idUsuarioActual
+                        );
+
                 if (todas != null) {
-                    for (Tarea t : todas) {
-                        if (!t.isCompletada()) {
-                            pendientes.add(t);
+
+                    for (Tarea tarea : todas) {
+
+                        if (!tarea.isCompletada()) {
+
+                            pendientes.add(
+                                    tarea
+                            );
                         }
                     }
                 }
             }
+
         } catch (Exception e) {
+
             e.printStackTrace();
         }
 
         if (pendientes.isEmpty()) {
-            if (rvTareasHoy != null) rvTareasHoy.setVisibility(View.GONE);
-            if (tvSinTareas != null) tvSinTareas.setVisibility(View.VISIBLE);
+
+            if (rvTareasHoy != null) {
+
+                rvTareasHoy.setVisibility(
+                        View.GONE
+                );
+            }
+
+            if (tvSinTareas != null) {
+
+                tvSinTareas.setVisibility(
+                        View.VISIBLE
+                );
+            }
+
         } else {
-            if (rvTareasHoy != null) rvTareasHoy.setVisibility(View.VISIBLE);
-            if (tvSinTareas != null) tvSinTareas.setVisibility(View.GONE);
-            if (adapter != null) adapter.actualizarTareas(pendientes);
+
+            if (rvTareasHoy != null) {
+
+                rvTareasHoy.setVisibility(
+                        View.VISIBLE
+                );
+            }
+
+            if (tvSinTareas != null) {
+
+                tvSinTareas.setVisibility(
+                        View.GONE
+                );
+            }
+
+            if (adapter != null) {
+
+                adapter.actualizarTareas(
+                        pendientes
+                );
+            }
         }
     }
 }

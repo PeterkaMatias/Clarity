@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -6,105 +7,135 @@
     android:layout_height="match_parent"
     android:background="@color/fondo_app">
 
+    <!-- CONTENIDO PRINCIPAL -->
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="76dp"
         android:orientation="vertical">
 
-        <!--Titulo principal -->
+        <!-- TÍTULO PRINCIPAL -->
 
-    <TextView
-        android:id="@+id/tvHeaderTareas"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="24dp"
-        android:paddingBottom="8dp"
-        android:text="Mis Tareas"
-        android:textColor="@color/gris_texto"
-        android:textSize="26sp"
-        android:textStyle="bold" />
-
-    <!-- 1. Filtros por ESTADO (chips) -->
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none"
-        android:paddingHorizontal="16dp"
-        android:layout_marginBottom="4dp">
-
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chipGroupEstado"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tvHeaderTareas"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:singleSelection="true">
+            android:paddingStart="16dp"
+            android:paddingTop="24dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:text="Mis Tareas"
+            android:textColor="@color/gris_texto"
+            android:textSize="26sp"
+            android:textStyle="bold" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipEstadoTodas"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
+        <!-- FILTROS POR ESTADO -->
+
+        <HorizontalScrollView
+            android:id="@+id/scrollEstado"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Todas" />
+            android:layout_marginBottom="4dp"
+            android:fillViewport="false"
+            android:overScrollMode="never"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:scrollbars="none">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipEstadoPendiente"
-            style="@style/Widget.Material3.Chip.Filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pendientes" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipEstadoEnProgreso"
-                style="@style/Widget.Material3.Chip.Filter"
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupEstado"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="En Progreso" />
+                android:paddingEnd="16dp"
+                app:chipSpacingHorizontal="8dp"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true">
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipEstadoCompletada"
-                style="@style/Widget.Material3.Chip.Filter"
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipEstadoTodas"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:checked="true"
+                    android:text="Todas" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipEstadoPendiente"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="Pendientes" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipEstadoEnProgreso"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="En Progreso" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipEstadoCompletada"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="Completadas" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+        </HorizontalScrollView>
+
+        <!-- FILTROS POR PRIORIDAD -->
+
+        <HorizontalScrollView
+            android:id="@+id/scrollPrioridad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:fillViewport="false"
+            android:overScrollMode="never"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:scrollbars="none">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupPrioridad"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Completadas" />
-
-        </com.google.android.material.chip.ChipGroup>
-    </HorizontalScrollView>
-
-<!-- 2- Filtros por PRIORIDAD (Chips) -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:scrollbars="none"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="8dp">
-
-               <com.google.android.material.chip.ChipGroup
-                   android:id="@+id/chipGroupPrioridad"
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   app:singleSelection="true">
+                android:paddingEnd="16dp"
+                app:chipSpacingHorizontal="8dp"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true">
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipPrioridadTodas"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:checkable="true"
                     android:checked="true"
                     android:text="Todas las prioridades" />
 
-               <com.google.android.material.chip.Chip
-                       android:id="@+id/chipPrioridadAlta"
-                       style="@style/Widget.Material3.Chip.Filter"
-                       android:layout_width="wrap_content"
-                       android:layout_height="wrap_content"
-                       android:text="Alta" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPrioridadAlta"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checkable="true"
+                    android:text="Alta" />
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipPrioridadMedia"
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:checkable="true"
                     android:text="Media" />
 
                 <com.google.android.material.chip.Chip
@@ -112,42 +143,73 @@
                     style="@style/Widget.Material3.Chip.Filter"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:checkable="true"
                     android:text="Baja" />
-               </com.google.android.material.chip.ChipGroup>
-            </HorizontalScrollView>
 
-            <!-- Lista de tareas -->
+            </com.google.android.material.chip.ChipGroup>
+
+        </HorizontalScrollView>
+
+        <!-- CONTENEDOR DE LISTA Y ESTADO VACÍO -->
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvTareas"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:clipToPadding="false"
-                android:paddingBottom="80dp" />
-            <!-- Vista vacia -->
+                android:paddingStart="16dp"
+                android:paddingTop="8dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="100dp" />
+
             <TextView
                 android:id="@+id/tvSinTareas"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="match_parent"
                 android:gravity="center"
                 android:padding="32dp"
-                android:text="No tenes tareas en esta categoria.\n ¡Toca el boton + para crear una!"
+                android:text="No tenés tareas en esta categoría.&#10;¡Tocá el botón + para crear una!"
                 android:textColor="@color/gris_texto"
                 android:textSize="16sp"
                 android:visibility="gone" />
 
-        </LinearLayout>
-<!-- Boton flotante para crear nueva tarea -->
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- BOTÓN FLOTANTE PARA CREAR TAREA -->
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAgregarTarea"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="96dp"
         android:contentDescription="Nueva tarea"
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="@color/verde_principal"
-        app:tint="@color/blanco_superficie" />
+        app:tint="#FFFFFF" />
+
+    <!-- BARRA INFERIOR FIJA -->
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:layout_gravity="bottom"
+        android:background="@color/blanco_superficie"
+        android:elevation="8dp"
+        app:itemHorizontalTranslationEnabled="false"
+        app:itemIconSize="22dp"
+        app:itemIconTint="@color/verde_principal"
+        app:itemTextColor="@color/verde_principal"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/menu_bottom_navigation" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

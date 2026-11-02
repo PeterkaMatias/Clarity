@@ -1,246 +1,607 @@
 package com.conexa.clarity.ui.timer;
 
+import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import com.conexa.clarity.R;
-import android.widget.Button;
-
-import com.conexa.clarity.data.local.TareaDao;
-import com.conexa.clarity.data.model.Tarea;
-import com.google.android.material.button.MaterialButton;
-
-import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import android.content.Intent;
 
 import com.conexa.clarity.MainActivity;
+import com.conexa.clarity.R;
+import com.conexa.clarity.data.local.TareaDao;
+import com.conexa.clarity.data.model.Tarea;
 import com.conexa.clarity.ui.chat.ChatActivity;
 import com.conexa.clarity.ui.resources.RecursosActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class FocusTimerActivity extends AppCompatActivity {
+
     private boolean estaCorriendo = false;
-    private long tiempoSeleccionado = 5 * 60 * 1000L;
+
+    private long tiempoSeleccionado =
+            5 * 60 * 1000L;
+
+    private long tiempoRestante =
+            tiempoSeleccionado;
+
     private MaterialButton boton5min;
     private MaterialButton boton15min;
     private MaterialButton boton25min;
+
     private Button botonComenzar;
-    private CountDownTimer temporizador;
     private Button botonReiniciar;
+
+    private CountDownTimer temporizador;
+
     private TareaDao tareaDao;
     private List<Tarea> tareasPendientes;
     private Tarea tareaSeleccionada;
+
+    private TextView tvTiempoRestante;
     private TextView tvTituloTarea;
     private TextView tvSubtituloTarea;
+
     private View cardTareaSeleccionada;
-    private final int idUsuarioActual = 1;
+
     private BottomNavigationView bottomNav;
 
-
-    private long tiempoRestante = tiempoSeleccionado;
-    private TextView tvTiempoRestante;
+    private int idUsuarioActual = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_focus_timer);
-        bottomNav = findViewById(R.id.bottomNavigationView);
-        configurarNavegacion();
+
+        idUsuarioActual = getIntent().getIntExtra(
+                "id_usuario",
+                1
+        );
 
         tareaDao = new TareaDao(this);
 
-        tvTituloTarea = findViewById(R.id.tvTituloTarea);
-        tvSubtituloTarea = findViewById(R.id.tvSubtituloTarea);
-        cardTareaSeleccionada = findViewById(R.id.cardTareaSeleccionada);
+        inicializarVistas();
+        configurarNavegacion();
+        configurarBotonesTiempo();
+        configurarBotonComenzar();
+        configurarBotonReiniciar();
+        configurarSelectorTareas();
 
         cargarTareasPendientes();
+        actualizarReloj();
+        actualizarColorBoton(boton5min);
+    }
 
-        cardTareaSeleccionada.setOnClickListener(v -> mostrarSelectorTareas());
+    private void inicializarVistas() {
 
-        tvTiempoRestante = findViewById(R.id.tvTiempoRestante);
-        boton5min = findViewById(R.id.boton5Min);
-        boton15min = findViewById(R.id.boton15Min);
-        boton25min = findViewById(R.id.boton25Min);
-        botonComenzar = findViewById(R.id.botonComenzar);
-        botonReiniciar = findViewById(R.id.botonReiniciar);
+        bottomNav = findViewById(
+                R.id.bottomNavigationView
+        );
+
+        tvTituloTarea = findViewById(
+                R.id.tvTituloTarea
+        );
+
+        tvSubtituloTarea = findViewById(
+                R.id.tvSubtituloTarea
+        );
+
+        cardTareaSeleccionada = findViewById(
+                R.id.cardTareaSeleccionada
+        );
+
+        tvTiempoRestante = findViewById(
+                R.id.tvTiempoRestante
+        );
+
+        boton5min = findViewById(
+                R.id.boton5Min
+        );
+
+        boton15min = findViewById(
+                R.id.boton15Min
+        );
+
+        boton25min = findViewById(
+                R.id.boton25Min
+        );
+
+        botonComenzar = findViewById(
+                R.id.botonComenzar
+        );
+
+        botonReiniciar = findViewById(
+                R.id.botonReiniciar
+        );
+
+        /*
+         * Quita el redondel violeta del elemento
+         * seleccionado en la navegación inferior.
+         */
+        if (bottomNav != null) {
+
+            bottomNav.setItemActiveIndicatorEnabled(
+                    false
+            );
+        }
+    }
+
+    private void configurarSelectorTareas() {
+
+        if (cardTareaSeleccionada == null) {
+            return;
+        }
+
+        cardTareaSeleccionada.setOnClickListener(
+                view -> mostrarSelectorTareas()
+        );
+    }
+
+    private void configurarBotonesTiempo() {
+
+        boton5min.setOnClickListener(view -> {
+
+            seleccionarTiempo(
+                    5,
+                    boton5min
+            );
+        });
+
+        boton15min.setOnClickListener(view -> {
+
+            seleccionarTiempo(
+                    15,
+                    boton15min
+            );
+        });
+
+        boton25min.setOnClickListener(view -> {
+
+            seleccionarTiempo(
+                    25,
+                    boton25min
+            );
+        });
+    }
+
+    private void seleccionarTiempo(
+            int minutos,
+            MaterialButton botonSeleccionado
+    ) {
+
+        if (estaCorriendo) {
+            return;
+        }
+
+        tiempoSeleccionado =
+                minutos * 60 * 1000L;
+
+        tiempoRestante =
+                tiempoSeleccionado;
+
         actualizarReloj();
 
-        boton5min.setOnClickListener(v -> {
-            tiempoSeleccionado = 5 * 60 * 1000L;
-            tiempoRestante = tiempoSeleccionado;
-            actualizarReloj();
-            actualizarColorBoton(boton5min);
-        });
-        boton15min.setOnClickListener(v -> {
-            tiempoSeleccionado = 15 * 60 * 1000L;
-            tiempoRestante = tiempoSeleccionado;
-            actualizarReloj();
-            actualizarColorBoton(boton15min);
-
-        });
-        boton25min.setOnClickListener(v -> {
-            tiempoSeleccionado = 25 * 60 * 1000L;
-            tiempoRestante = tiempoSeleccionado;
-            actualizarReloj();
-            actualizarColorBoton(boton25min);
-        });
-
-        botonComenzar.setOnClickListener(v -> {
-            if(estaCorriendo){
-                temporizador.cancel();
-                estaCorriendo = false;
-                botonComenzar.setText("Continuar");
-                habilitarBotonMin(true);
-            }else{
-                estaCorriendo = true;
-                botonComenzar.setText("Pausar");
-                habilitarBotonMin(false);
-
-                temporizador = new CountDownTimer(tiempoRestante, 1000) {
-                    public void onTick ( long millisUntilFinished){
-                        tiempoRestante = millisUntilFinished;
-                        actualizarReloj();
-                    }
-                    public void onFinish () {
-                        tiempoRestante = 0;
-                        actualizarReloj();
-                    }
-                }.start();
-
-            }
-        });
-        botonReiniciar.setOnClickListener(v -> {
-            if(temporizador != null){
-                temporizador.cancel();
-
-            }
-            estaCorriendo =false;
-            tiempoRestante = tiempoSeleccionado;
-
-            actualizarReloj();
-            botonComenzar.setText("Comenzar");
-            habilitarBotonMin(true);
-        });
-
-
+        actualizarColorBoton(
+                botonSeleccionado
+        );
     }
-    private void actualizarReloj(){
-        long segundos = tiempoRestante / 1000;
-        long minutos = segundos / 60;
-        long segundosRestantes = segundos % 60;
+
+    private void configurarBotonComenzar() {
+
+        botonComenzar.setOnClickListener(view -> {
+
+            if (estaCorriendo) {
+
+                pausarTemporizador();
+
+            } else {
+
+                iniciarTemporizador();
+            }
+        });
+    }
+
+    private void iniciarTemporizador() {
+
+        if (tiempoRestante <= 0) {
+
+            tiempoRestante =
+                    tiempoSeleccionado;
+        }
+
+        estaCorriendo = true;
+
+        botonComenzar.setText(
+                "Pausar"
+        );
+
+        habilitarBotonesMinutos(
+                false
+        );
+
+        temporizador = new CountDownTimer(
+                tiempoRestante,
+                1000
+        ) {
+
+            @Override
+            public void onTick(
+                    long millisUntilFinished
+            ) {
+
+                tiempoRestante =
+                        millisUntilFinished;
+
+                actualizarReloj();
+            }
+
+            @Override
+            public void onFinish() {
+
+                tiempoRestante = 0;
+                estaCorriendo = false;
+
+                actualizarReloj();
+
+                botonComenzar.setText(
+                        "Comenzar"
+                );
+
+                habilitarBotonesMinutos(
+                        true
+                );
+
+                Toast.makeText(
+                        FocusTimerActivity.this,
+                        "¡Sesión de enfoque completada!",
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        }.start();
+    }
+
+    private void pausarTemporizador() {
+
+        if (temporizador != null) {
+
+            temporizador.cancel();
+            temporizador = null;
+        }
+
+        estaCorriendo = false;
+
+        botonComenzar.setText(
+                "Continuar"
+        );
+
+        habilitarBotonesMinutos(
+                true
+        );
+    }
+
+    private void configurarBotonReiniciar() {
+
+        botonReiniciar.setOnClickListener(view -> {
+
+            reiniciarTemporizador();
+        });
+    }
+
+    private void reiniciarTemporizador() {
+
+        if (temporizador != null) {
+
+            temporizador.cancel();
+            temporizador = null;
+        }
+
+        estaCorriendo = false;
+
+        tiempoRestante =
+                tiempoSeleccionado;
+
+        actualizarReloj();
+
+        botonComenzar.setText(
+                "Comenzar"
+        );
+
+        habilitarBotonesMinutos(
+                true
+        );
+    }
+
+    private void actualizarReloj() {
+
+        long segundos =
+                tiempoRestante / 1000;
+
+        long minutos =
+                segundos / 60;
+
+        long segundosRestantes =
+                segundos % 60;
 
         String tiempo = String.format(
-                java.util.Locale.getDefault(),
+                Locale.getDefault(),
                 "%02d:%02d",
                 minutos,
                 segundosRestantes
-
         );
-        tvTiempoRestante.setText(tiempo);
+
+        tvTiempoRestante.setText(
+                tiempo
+        );
     }
-    private void actualizarColorBoton(MaterialButton seleccionado){
-        int colorSeleccionado = getColor(R.color.verde_principal);
-        int colorNoSeleccionado = getColor(R.color.verde_secundario);
+
+    private void actualizarColorBoton(
+            MaterialButton seleccionado
+    ) {
+
+        int colorSeleccionado =
+                getColor(
+                        R.color.verde_principal
+                );
+
+        int colorNoSeleccionado =
+                getColor(
+                        R.color.verde_secundario
+                );
 
         boton5min.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(
-                        boton5min == seleccionado ? colorSeleccionado : colorNoSeleccionado
+                ColorStateList.valueOf(
+                        boton5min == seleccionado
+                                ? colorSeleccionado
+                                : colorNoSeleccionado
                 )
         );
+
         boton15min.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(
-                        boton15min == seleccionado ? colorSeleccionado : colorNoSeleccionado
+                ColorStateList.valueOf(
+                        boton15min == seleccionado
+                                ? colorSeleccionado
+                                : colorNoSeleccionado
                 )
         );
+
         boton25min.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(
-                        boton25min == seleccionado ? colorSeleccionado : colorNoSeleccionado
+                ColorStateList.valueOf(
+                        boton25min == seleccionado
+                                ? colorSeleccionado
+                                : colorNoSeleccionado
                 )
         );
+    }
 
+    private void habilitarBotonesMinutos(
+            boolean habilitar
+    ) {
+
+        boton5min.setEnabled(
+                habilitar
+        );
+
+        boton15min.setEnabled(
+                habilitar
+        );
+
+        boton25min.setEnabled(
+                habilitar
+        );
     }
-    private void habilitarBotonMin(boolean habilitar){
-        boton5min.setEnabled(habilitar);
-        boton15min.setEnabled(habilitar);
-        boton25min.setEnabled(habilitar);
-    }
-    private void cargarTareasPendientes(){
+
+    private void cargarTareasPendientes() {
+
         List<Tarea> todasLasTareas =
-                tareaDao.obtenerTareasPorUsuario(idUsuarioActual);
-        tareasPendientes = new ArrayList<>();
+                tareaDao.obtenerTareasPorUsuario(
+                        idUsuarioActual
+                );
 
-        for (Tarea tarea : todasLasTareas){
-            if (!tarea.isCompletada()){
-                tareasPendientes.add(tarea);
+        tareasPendientes =
+                new ArrayList<>();
+
+        if (todasLasTareas == null) {
+            return;
+        }
+
+        for (Tarea tarea : todasLasTareas) {
+
+            if (!tarea.isCompletada()) {
+
+                tareasPendientes.add(
+                        tarea
+                );
             }
         }
     }
 
     private void mostrarSelectorTareas() {
-        if (tareasPendientes == null || tareasPendientes.isEmpty()) {
+
+        cargarTareasPendientes();
+
+        if (tareasPendientes == null
+                || tareasPendientes.isEmpty()) {
+
             Toast.makeText(
                     this,
                     "No hay tareas pendientes para seleccionar",
                     Toast.LENGTH_SHORT
             ).show();
+
             return;
         }
-        String[] titulos = new String[tareasPendientes.size()];
 
-        for (int i = 0; i < tareasPendientes.size(); i++) {
-            titulos[i] = tareasPendientes.get(i).getTitulo();
+        String[] titulos =
+                new String[tareasPendientes.size()];
+
+        for (
+                int i = 0;
+                i < tareasPendientes.size();
+                i++
+        ) {
+
+            titulos[i] =
+                    tareasPendientes
+                            .get(i)
+                            .getTitulo();
         }
 
         new AlertDialog.Builder(this)
                 .setTitle("Seleccionar tarea")
-                .setItems(titulos, (dialog, posicion) -> {
-                    tareaSeleccionada = tareasPendientes.get(posicion);
+                .setItems(
+                        titulos,
+                        (dialog, posicion) -> {
 
-                    tvTituloTarea.setText(tareaSeleccionada.getTitulo());
-                    tvSubtituloTarea.setText(
-                            "Tarea seleccionada para esta sesión"
-                    );
-                })
-                .setNegativeButton("Cancelar", null)
+                            tareaSeleccionada =
+                                    tareasPendientes.get(
+                                            posicion
+                                    );
+
+                            tvTituloTarea.setText(
+                                    tareaSeleccionada
+                                            .getTitulo()
+                            );
+
+                            tvSubtituloTarea.setText(
+                                    "Tarea seleccionada para esta sesión"
+                            );
+                        }
+                )
+                .setNegativeButton(
+                        "Cancelar",
+                        null
+                )
                 .show();
-
     }
-    private void configurarNavegacion() {
-        if (bottomNav == null) return;
 
-        bottomNav.setSelectedItemId(R.id.nav_enfoque);
+    /*
+     * NAVEGACIÓN INFERIOR
+     */
+
+    private void configurarNavegacion() {
+
+        if (bottomNav == null) {
+            return;
+        }
+
+        bottomNav.setSelectedItemId(
+                R.id.nav_enfoque
+        );
 
         bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
+
+            int itemId =
+                    item.getItemId();
+
+            if (itemId == R.id.nav_enfoque) {
+
+                return true;
+            }
 
             if (itemId == R.id.nav_inicio) {
-                startActivity(new Intent(this, MainActivity.class));
-                finish();
-                return true;
 
-            } else if (itemId == R.id.nav_chat) {
-                startActivity(new Intent(this, ChatActivity.class));
-                finish();
-                return true;
+                abrirPantalla(
+                        MainActivity.class
+                );
 
-            } else if (itemId == R.id.nav_recursos) {
-                startActivity(new Intent(this, RecursosActivity.class));
-                finish();
                 return true;
+            }
 
-            } else if (itemId == R.id.nav_enfoque) {
+            if (itemId == R.id.nav_chat) {
+
+                abrirPantalla(
+                        ChatActivity.class
+                );
+
+                return true;
+            }
+
+            if (itemId == R.id.nav_recursos) {
+
+                abrirPantalla(
+                        RecursosActivity.class
+                );
+
                 return true;
             }
 
             return false;
         });
+    }
+
+    private void abrirPantalla(
+            Class<?> pantallaDestino
+    ) {
+
+        /*
+         * Detiene el contador antes de abandonar
+         * la pantalla de Enfoque.
+         */
+        if (temporizador != null) {
+
+            temporizador.cancel();
+            temporizador = null;
+        }
+
+        estaCorriendo = false;
+
+        Intent intent = new Intent(
+                FocusTimerActivity.this,
+                pantallaDestino
+        );
+
+        intent.putExtra(
+                "id_usuario",
+                idUsuarioActual
+        );
+
+        startActivity(intent);
+
+        overridePendingTransition(
+                R.anim.fade_in,
+                R.anim.fade_out
+        );
+
+        finish();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (bottomNav != null) {
+
+            bottomNav.setSelectedItemId(
+                    R.id.nav_enfoque
+            );
+        }
+
+        if (tareaDao != null) {
+
+            cargarTareasPendientes();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        if (temporizador != null) {
+
+            temporizador.cancel();
+            temporizador = null;
+        }
+
+        super.onDestroy();
     }
 }
