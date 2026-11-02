@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -14,20 +13,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Clarity">
 
-        <!-- Módulo Tareas (Rodrigo) -->
+        <!-- Gestor de tareas -->
         <activity
             android:name=".ui.tareas.TareasActivity"
             android:exported="false" />
 
-        <!-- Pantalla de inicio: login -->
+        <!-- Login: pantalla inicial -->
         <activity
             android:name=".ui.auth.LoginActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
 
         <!-- Dashboard principal -->
@@ -36,23 +37,24 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Autenticación y Registro -->
+        <!-- Registro -->
         <activity
             android:name=".ui.auth.RegistroActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Chatbot / Asistente Virtual -->
+        <!-- Chatbot Lumi -->
         <activity
             android:name=".ui.chat.ChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
-        <!-- Temporizador de Concentración (Focus Timer) -->
+        <!-- Temporizador -->
         <activity
             android:name=".ui.timer.FocusTimerActivity"
             android:exported="false" />
 
-        <!-- Centro de Recursos y Detalle de Lectura -->
+        <!-- Recursos -->
         <activity
             android:name=".ui.resources.RecursosActivity"
             android:exported="false" />
@@ -61,18 +63,18 @@
             android:name=".ui.resources.DetalleRecursoActivity"
             android:exported="false" />
 
-        <!-- Ajustes y Accesibilidad -->
+        <!-- Ajustes -->
         <activity
             android:name=".ui.settings.AjustesActivity"
             android:exported="false" />
 
-        <!-- Formulario crear/editar tarea (Rodrigo) -->
+        <!-- Crear/editar tarea -->
         <activity
             android:name=".ui.tareas.FormularioTareaActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Desglose IA de tarea (Rodrigo) -->
+        <!-- Desglose IA -->
         <activity
             android:name=".ui.tareas.DesgloseTareaActivity"
             android:exported="false"

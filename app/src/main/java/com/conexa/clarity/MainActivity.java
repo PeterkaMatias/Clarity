@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_chat) {
                 startActivity(new Intent(this, ChatActivity.class));
                 return true;
-            } else if (itemId == R.id.nav_timer) {
+            } else if (itemId == R.id.nav_enfoque) {
                 startActivity(new Intent(this, FocusTimerActivity.class));
                 return true;
             }

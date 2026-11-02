@@ -7,8 +7,8 @@
         android:title="Inicio" />
 
     <item
-        android:id="@+id/nav_timer"
-        android:icon="@drawable/ic_enfoque"
+        android:id="@+id/nav_enfoque"
+        android:icon="@android:drawable/ic_menu_recent_history"
         android:title="Enfoque" />
 
     <item

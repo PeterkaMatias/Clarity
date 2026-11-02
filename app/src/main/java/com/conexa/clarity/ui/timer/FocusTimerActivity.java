@@ -216,7 +216,7 @@ public class FocusTimerActivity extends AppCompatActivity {
     private void configurarNavegacion() {
         if (bottomNav == null) return;
 
-        bottomNav.setSelectedItemId(R.id.nav_timer);
+        bottomNav.setSelectedItemId(R.id.nav_enfoque);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
@@ -236,7 +236,7 @@ public class FocusTimerActivity extends AppCompatActivity {
                 finish();
                 return true;
 
-            } else if (itemId == R.id.nav_timer) {
+            } else if (itemId == R.id.nav_enfoque) {
                 return true;
             }
 
