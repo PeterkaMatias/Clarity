@@ -17,15 +17,25 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.conexa.clarity.BuildConfig;
 import com.conexa.clarity.MainActivity;
 import com.conexa.clarity.R;
+import com.conexa.clarity.data.remote.ClaudeApi;
+import com.conexa.clarity.data.remote.ClaudeRequest;
+import com.conexa.clarity.data.remote.ClaudeResponse;
+import com.conexa.clarity.data.remote.RetrofitClient;
 import com.conexa.clarity.ui.resources.RecursosActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -39,7 +49,34 @@ public class ChatActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private List<Mensaje> listaMensajes;
 
+    private ClaudeApi claudeApi;
+
     private int idUsuario;
+    private boolean consultaEnCurso = false;
+
+    private static final String MODELO =
+            "claude-haiku-5-5";
+
+    private static final String PROMPT_SISTEMA =
+            "Sos Lumi, el asistente virtual de Clarity. " +
+                    "Funcionás como un asistente general, práctico y fácil de entender. " +
+                    "Podés responder preguntas generales, explicar temas, sugerir recetas, " +
+                    "ayudar con tareas académicas, organizar actividades y dividir " +
+                    "objetivos complejos en pasos pequeños. " +
+                    "Respondé en español rioplatense, con un tono cálido, natural, " +
+                    "claro y directo. " +
+                    "Las respuestas deben ser relativamente breves, pero completas. " +
+                    "Cuando una explicación requiera varios pasos, usá una lista ordenada. " +
+                    "Cuando te pidan una receta, incluí un nombre para la receta, " +
+                    "los ingredientes necesarios y pasos simples de preparación. " +
+                    "No es obligatorio usar todos los ingredientes mencionados " +
+                    "si alguno no combina con la preparación. " +
+                    "Cuando te pidan dividir una tarea, devolvé entre 3 y 7 micro-pasos " +
+                    "concretos y accionables. " +
+                    "No inventes información actual o en tiempo real. " +
+                    "Si la consulta necesita datos actuales, indicá brevemente que no tenés " +
+                    "acceso a información en tiempo real. " +
+                    "No realices diagnósticos médicos ni reemplaces asesoramiento profesional.";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,13 +94,19 @@ public class ChatActivity extends AppCompatActivity {
                 -1
         );
 
+        claudeApi = RetrofitClient
+                .getClient()
+                .create(ClaudeApi.class);
+
         inicializarVistas();
         configurarAjusteTeclado();
         configurarRecyclerView();
         configurarBotonEnviar();
-        configurarSugerencias();
+        configurarSugerenciasPredeterminadas();
         configurarNavegacion();
         mostrarMensajeInicial();
+
+        generarSugerenciasConClaude();
     }
 
     private void inicializarVistas() {
@@ -165,9 +208,9 @@ public class ChatActivity extends AppCompatActivity {
 
         Mensaje bienvenida = new Mensaje(
                 "Hola, soy Lumi 🌿\n\n" +
-                        "Estoy acá para ayudarte a organizar tus tareas " +
-                        "y avanzar paso a paso.\n\n" +
-                        "¿Qué necesitás organizar hoy?",
+                        "Puedo ayudarte con tareas, recetas, estudio, " +
+                        "organización y consultas simples.\n\n" +
+                        "¿Qué necesitás hoy?",
                 false
         );
 
@@ -202,6 +245,17 @@ public class ChatActivity extends AppCompatActivity {
 
     private void enviarMensaje() {
 
+        if (consultaEnCurso) {
+
+            Toast.makeText(
+                    this,
+                    "Lumi todavía está preparando la respuesta",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            return;
+        }
+
         String texto = etMensaje
                 .getText()
                 .toString()
@@ -233,44 +287,386 @@ public class ChatActivity extends AppCompatActivity {
         desplazarAlUltimoMensaje();
         ocultarTeclado();
 
-        responderTemporalmente(texto);
+        ConversationMemory.agregarMensajeUsuario(
+                texto
+        );
+        consultarClaude(texto);
     }
 
-    private void responderTemporalmente(
+    private void consultarClaude(
             String mensajeUsuario
     ) {
 
-        String respuesta;
+        if (apiKeyNoConfigurada()) {
 
-        String mensajeMinuscula =
-                mensajeUsuario.toLowerCase();
+            agregarRespuestaLumi(
+                    "No encontré la API key de Claude. " +
+                            "Revisá CLAUDE_API_KEY en local.properties."
+            );
 
-        if (mensajeMinuscula.contains("dividir")
-                || mensajeMinuscula.contains("paso")) {
-
-            respuesta =
-                    "Claro. Vamos a dividirlo en pasos pequeños 🌿\n\n" +
-                            "1. Definí qué necesitás terminar.\n" +
-                            "2. Elegí el primer paso más sencillo.\n" +
-                            "3. Trabajá solamente en ese paso.\n" +
-                            "4. Revisá el avance antes de continuar.";
-
-        } else if (mensajeMinuscula.contains("organizar")
-                || mensajeMinuscula.contains("plan")) {
-
-            respuesta =
-                    "Podemos organizarlo sin llenar más tu lista 🌿\n\n" +
-                            "Primero elegí una prioridad. " +
-                            "Después agregamos una tarea corta " +
-                            "y dejamos espacio para una pausa.";
-
-        } else {
-
-            respuesta =
-                    "Te leí 🌿\n\n" +
-                            "Puedo ayudarte a organizar esa idea " +
-                            "o dividirla en pasos más pequeños.";
+            return;
         }
+
+        consultaEnCurso = true;
+        cambiarEstadoFormulario(false);
+
+        int posicionMensajePensando =
+                listaMensajes.size();
+
+        chatAdapter.agregarMensaje(
+                new Mensaje(
+                        "Estoy pensando... 🌿",
+                        false
+                )
+        );
+
+        desplazarAlUltimoMensaje();
+
+        ClaudeRequest request =
+                new ClaudeRequest(
+                        MODELO,
+                        2000,
+                        PROMPT_SISTEMA,
+                        ConversationMemory.obtenerMensajes()
+                );
+        claudeApi.enviarMensaje(
+                BuildConfig.CLAUDE_API_KEY,
+                request
+        ).enqueue(new Callback<ClaudeResponse>() {
+
+            @Override
+            public void onResponse(
+                    Call<ClaudeResponse> call,
+                    Response<ClaudeResponse> response
+            ) {
+
+                eliminarMensajePensando(
+                        posicionMensajePensando
+                );
+
+                consultaEnCurso = false;
+                cambiarEstadoFormulario(true);
+
+                if (!response.isSuccessful()) {
+
+                    String detalleError =
+                            leerDetalleError(response);
+
+                    agregarRespuestaLumi(
+                            "No pude conectarme correctamente con Claude.\n\n" +
+                                    "Código HTTP: " +
+                                    response.code() +
+                                    detalleError
+                    );
+
+                    return;
+                }
+
+                ClaudeResponse respuestaClaude =
+                        response.body();
+
+                if (respuestaClaude == null) {
+
+                    agregarRespuestaLumi(
+                            "Claude respondió sin contenido."
+                    );
+
+                    return;
+                }
+
+                String textoRespuesta =
+                        respuestaClaude.obtenerTexto();
+
+                if (textoRespuesta.isEmpty()) {
+
+                    String motivo =
+                            respuestaClaude.getStopReason();
+
+                    if ("max_tokens".equals(motivo)) {
+
+                        agregarRespuestaLumi(
+                                "La respuesta superó el límite disponible. " +
+                                        "Probá nuevamente con una consulta más corta."
+                        );
+
+                    } else {
+
+                        agregarRespuestaLumi(
+                                "Claude respondió, pero no devolvió " +
+                                        "un mensaje de texto. Motivo: " +
+                                        (motivo != null
+                                                ? motivo
+                                                : "desconocido")
+                        );
+                    }
+
+                    return;
+                }
+
+                ConversationMemory.agregarMensajeLumi(
+                        textoRespuesta
+                );
+
+                agregarRespuestaLumi(
+                        textoRespuesta
+                );
+            }
+
+            @Override
+            public void onFailure(
+                    Call<ClaudeResponse> call,
+                    Throwable throwable
+            ) {
+
+                eliminarMensajePensando(
+                        posicionMensajePensando
+                );
+
+                consultaEnCurso = false;
+                cambiarEstadoFormulario(true);
+
+                String mensajeError =
+                        throwable.getMessage();
+
+                if (mensajeError == null
+                        || mensajeError.isEmpty()) {
+
+                    mensajeError =
+                            "Error de conexión desconocido";
+                }
+
+                agregarRespuestaLumi(
+                        "No pude conectarme a Internet.\n\n" +
+                                mensajeError
+                );
+            }
+        });
+    }
+
+    /*
+     * SUGERENCIAS PREDETERMINADAS
+     *
+     * Se muestran inmediatamente al abrir la pantalla.
+     * Si Claude genera otras sugerencias correctamente,
+     * luego se reemplazan.
+     */
+
+    private void configurarSugerenciasPredeterminadas() {
+
+        establecerSugerencia(
+                chipPasoAPaso,
+                "Dividir una tarea"
+        );
+
+        establecerSugerencia(
+                chipAjustarPlan,
+                "Organizar mi día"
+        );
+    }
+
+    /*
+     * GENERACIÓN DE SUGERENCIAS CON CLAUDE
+     */
+
+    private void generarSugerenciasConClaude() {
+
+        if (apiKeyNoConfigurada()) {
+            return;
+        }
+
+        String promptSugerencias =
+                "Generá exactamente 2 sugerencias diferentes " +
+                        "para iniciar una conversación con Lumi. " +
+                        "Las sugerencias pueden tratar sobre recetas, estudio, " +
+                        "organización, explicaciones simples o tareas cotidianas. " +
+                        "Cada sugerencia debe tener entre 3 y 6 palabras " +
+                        "y como máximo 35 caracteres. " +
+                        "No repitas las mismas categorías en las dos sugerencias. " +
+                        "Devolvé únicamente las dos sugerencias, " +
+                        "una por línea, sin números, viñetas, comillas ni explicación.";
+
+        String sistemaSugerencias =
+                "Generás sugerencias breves, claras y variadas " +
+                        "para empezar una conversación con un asistente general.";
+
+        List<ClaudeRequest.Message> mensajesSugerencias =
+                new ArrayList<>();
+
+        mensajesSugerencias.add(
+                new ClaudeRequest.Message(
+                        "user",
+                        promptSugerencias
+                )
+        );
+
+        ClaudeRequest request =
+                new ClaudeRequest(
+                        MODELO,
+                        1000,
+                        sistemaSugerencias,
+                        mensajesSugerencias
+                );
+
+        claudeApi.enviarMensaje(
+                BuildConfig.CLAUDE_API_KEY,
+                request
+        ).enqueue(new Callback<ClaudeResponse>() {
+
+            @Override
+            public void onResponse(
+                    Call<ClaudeResponse> call,
+                    Response<ClaudeResponse> response
+            ) {
+
+                if (!response.isSuccessful()
+                        || response.body() == null) {
+
+                    return;
+                }
+
+                String texto =
+                        response.body().obtenerTexto();
+
+                if (texto == null
+                        || texto.trim().isEmpty()) {
+
+                    return;
+                }
+
+                mostrarSugerenciasGeneradas(
+                        texto
+                );
+            }
+
+            @Override
+            public void onFailure(
+                    Call<ClaudeResponse> call,
+                    Throwable throwable
+            ) {
+
+            }
+        });
+    }
+
+    private void mostrarSugerenciasGeneradas(
+            String respuesta
+    ) {
+
+        String[] lineas =
+                respuesta.split("\\r?\\n");
+
+        List<String> sugerencias =
+                new ArrayList<>();
+
+        for (String linea : lineas) {
+
+            String sugerencia =
+                    limpiarSugerencia(linea);
+
+            if (!sugerencia.isEmpty()
+                    && !sugerencias.contains(sugerencia)) {
+
+                sugerencias.add(
+                        sugerencia
+                );
+            }
+
+            if (sugerencias.size() == 2) {
+                break;
+            }
+        }
+
+        if (sugerencias.size() < 2) {
+            return;
+        }
+
+        establecerSugerencia(
+                chipPasoAPaso,
+                sugerencias.get(0)
+        );
+
+        establecerSugerencia(
+                chipAjustarPlan,
+                sugerencias.get(1)
+        );
+    }
+
+    private void establecerSugerencia(
+            Chip chip,
+            String sugerencia
+    ) {
+
+        chip.setText(sugerencia);
+
+        chip.setOnClickListener(v -> {
+
+            etMensaje.setText(
+                    sugerencia
+            );
+
+            prepararCampoDeTexto();
+        });
+    }
+
+    private String limpiarSugerencia(
+            String texto
+    ) {
+
+        if (texto == null) {
+            return "";
+        }
+
+        String resultado =
+                texto.trim();
+
+        resultado = resultado.replaceFirst(
+                "^[\\-•*]+\\s*",
+                ""
+        );
+
+        resultado = resultado.replaceFirst(
+                "^\\d+[.)-]?\\s*",
+                ""
+        );
+
+        resultado = resultado.replace(
+                "\"",
+                ""
+        );
+
+        resultado = resultado.replace(
+                "'",
+                ""
+        );
+
+        resultado = resultado.trim();
+
+        if (resultado.length() > 40) {
+
+            resultado = resultado.substring(
+                    0,
+                    40
+            ).trim();
+        }
+
+        return resultado;
+    }
+
+    /*
+     * MÉTODOS AUXILIARES DEL CHAT
+     */
+
+    private boolean apiKeyNoConfigurada() {
+
+        return BuildConfig.CLAUDE_API_KEY.isEmpty()
+                || BuildConfig.CLAUDE_API_KEY.equals(
+                "API_KEY_NO_CONFIGURADA"
+        );
+    }
+
+    private void agregarRespuestaLumi(
+            String respuesta
+    ) {
 
         Mensaje mensajeLumi =
                 new Mensaje(
@@ -285,25 +681,72 @@ public class ChatActivity extends AppCompatActivity {
         desplazarAlUltimoMensaje();
     }
 
-    private void configurarSugerencias() {
+    private void eliminarMensajePensando(
+            int posicion
+    ) {
 
-        chipPasoAPaso.setOnClickListener(v -> {
+        if (posicion >= 0
+                && posicion < listaMensajes.size()) {
 
-            etMensaje.setText(
-                    "Ayudame a dividir una tarea en pasos pequeños"
+            listaMensajes.remove(
+                    posicion
             );
 
-            prepararCampoDeTexto();
-        });
-
-        chipAjustarPlan.setOnClickListener(v -> {
-
-            etMensaje.setText(
-                    "Necesito reorganizar mi plan para hoy"
+            chatAdapter.notifyItemRemoved(
+                    posicion
             );
+        }
+    }
 
-            prepararCampoDeTexto();
-        });
+    private String leerDetalleError(
+            Response<ClaudeResponse> response
+    ) {
+
+        if (response.errorBody() == null) {
+            return "";
+        }
+
+        try {
+
+            String error =
+                    response.errorBody().string();
+
+            if (error.length() > 400) {
+
+                error = error.substring(
+                        0,
+                        400
+                );
+            }
+
+            return "\n\nDetalle:\n" + error;
+
+        } catch (IOException exception) {
+
+            return "";
+        }
+    }
+
+    private void cambiarEstadoFormulario(
+            boolean habilitado
+    ) {
+
+        etMensaje.setEnabled(
+                habilitado
+        );
+
+        findViewById(R.id.btnEnviar)
+                .setEnabled(
+                        habilitado
+                );
+
+        chipPasoAPaso.setEnabled(
+                habilitado
+        );
+
+        chipAjustarPlan.setEnabled(
+                habilitado
+        );
     }
 
     private void prepararCampoDeTexto() {
@@ -316,6 +759,10 @@ public class ChatActivity extends AppCompatActivity {
         mostrarTeclado();
     }
 
+    /*
+     * NAVEGACIÓN INFERIOR
+     */
+
     private void configurarNavegacion() {
 
         bottomNavigation.setSelectedItemId(
@@ -325,7 +772,8 @@ public class ChatActivity extends AppCompatActivity {
         bottomNavigation.setOnItemSelectedListener(
                 item -> {
 
-                    int itemId = item.getItemId();
+                    int itemId =
+                            item.getItemId();
 
                     if (itemId == R.id.nav_chat) {
                         return true;
@@ -373,10 +821,11 @@ public class ChatActivity extends AppCompatActivity {
             Class<?> activityDestino
     ) {
 
-        Intent intent = new Intent(
-                ChatActivity.this,
-                activityDestino
-        );
+        Intent intent =
+                new Intent(
+                        ChatActivity.this,
+                        activityDestino
+                );
 
         intent.putExtra(
                 "id_usuario",
@@ -387,10 +836,15 @@ public class ChatActivity extends AppCompatActivity {
         finish();
     }
 
+    /*
+     * SCROLL Y TECLADO
+     */
+
     private void desplazarAlUltimoMensaje() {
 
         if (listaMensajes == null
                 || listaMensajes.isEmpty()) {
+
             return;
         }
 

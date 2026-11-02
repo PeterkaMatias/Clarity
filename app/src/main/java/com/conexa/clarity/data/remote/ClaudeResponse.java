@@ -1,22 +1,73 @@
 package com.conexa.clarity.data.remote;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class ClaudeResponse {
 
-    public List<Content> content;
+    private List<ContentBlock> content;
 
-    public static class Content {
-        public String type;
-        public String text;
-    }
+    @SerializedName("stop_reason")
+    private String stopReason;
 
     public String obtenerTexto() {
 
-        if (content == null || content.isEmpty()) {
+        if (content == null
+                || content.isEmpty()) {
+
             return "";
         }
 
-        return content.get(0).text;
+        StringBuilder resultado =
+                new StringBuilder();
+
+        for (ContentBlock bloque : content) {
+
+            if (bloque == null) {
+                continue;
+            }
+
+            if ("text".equals(bloque.type)
+                    && bloque.text != null
+                    && !bloque.text.trim().isEmpty()) {
+
+                if (resultado.length() > 0) {
+
+                    resultado.append(
+                            "\n"
+                    );
+                }
+
+                resultado.append(
+                        bloque.text.trim()
+                );
+            }
+        }
+
+        return resultado
+                .toString()
+                .trim();
+    }
+
+    public String getStopReason() {
+
+        return stopReason;
+    }
+
+    public static class ContentBlock {
+
+        private String type;
+        private String text;
+
+        public String getType() {
+
+            return type;
+        }
+
+        public String getText() {
+
+            return text;
+        }
     }
 }

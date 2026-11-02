@@ -1,6 +1,21 @@
+import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
 }
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use {
+            load(it)
+        }
+    }
+}
+
+val claudeApiKey =
+    localProperties.getProperty("CLAUDE_API_KEY")
+        ?: "API_KEY_NO_CONFIGURADA"
 
 android {
     namespace = "com.conexa.clarity"
@@ -14,8 +29,16 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
-
+        buildConfigField(
+            "String",
+            "CLAUDE_API_KEY",
+            "\"$claudeApiKey\""
+        )
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
