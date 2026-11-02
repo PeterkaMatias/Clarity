@@ -114,14 +114,11 @@ public class MainActivity extends AppCompatActivity {
                 R.id.cardFocusRapido
         );
 
-        /*
-         * Desactiva el óvalo violeta que aparece
-         * detrás del ítem seleccionado.
-         */
+
         if (bottomNav != null) {
 
             bottomNav.setItemActiveIndicatorEnabled(
-                    false
+                    true
             );
         }
 

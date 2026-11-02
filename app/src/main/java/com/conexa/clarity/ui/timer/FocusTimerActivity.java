@@ -125,14 +125,11 @@ public class FocusTimerActivity extends AppCompatActivity {
                 R.id.botonReiniciar
         );
 
-        /*
-         * Quita el redondel violeta del elemento
-         * seleccionado en la navegación inferior.
-         */
+
         if (bottomNav != null) {
 
             bottomNav.setItemActiveIndicatorEnabled(
-                    false
+                    true
             );
         }
     }

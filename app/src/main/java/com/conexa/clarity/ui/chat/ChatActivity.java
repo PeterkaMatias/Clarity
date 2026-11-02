@@ -152,7 +152,7 @@ public class ChatActivity extends AppCompatActivity {
         bottomNavigation = findViewById(
                 R.id.bottomNavigation
         );
-        bottomNavigation.setItemActiveIndicatorEnabled(false);
+        bottomNavigation.setItemActiveIndicatorEnabled(true);
     }
 
     private void configurarAjusteTeclado() {
@@ -176,33 +176,33 @@ public class ChatActivity extends AppCompatActivity {
                                     WindowInsetsCompat.Type.ime()
                             );
 
-                    int paddingInferior;
-
                     if (tecladoVisible) {
-
-                        paddingInferior =
-                                teclado.bottom;
 
                         bottomNavigation.setVisibility(
                                 View.GONE
                         );
 
-                    } else {
 
-                        paddingInferior =
-                                systemBars.bottom;
+                        view.setPadding(
+                                systemBars.left,
+                                systemBars.top,
+                                systemBars.right,
+                                teclado.bottom
+                        );
+
+                    } else {
 
                         bottomNavigation.setVisibility(
                                 View.VISIBLE
                         );
-                    }
 
-                    view.setPadding(
-                            systemBars.left,
-                            systemBars.top,
-                            systemBars.right,
-                            paddingInferior
-                    );
+                        view.setPadding(
+                                systemBars.left,
+                                systemBars.top,
+                                systemBars.right,
+                                0
+                        );
+                    }
 
                     return windowInsets;
                 }
@@ -212,7 +212,6 @@ public class ChatActivity extends AppCompatActivity {
                 rootChat
         );
     }
-
     private void configurarRecyclerView() {
 
         listaMensajes =

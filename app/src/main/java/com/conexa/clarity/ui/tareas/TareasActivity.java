@@ -91,14 +91,10 @@ public class TareasActivity extends AppCompatActivity
                 R.id.bottomNavigationView
         );
 
-        /*
-         * Elimina el redondel/indicador violeta
-         * del elemento seleccionado.
-         */
         if (bottomNavigation != null) {
 
             bottomNavigation.setItemActiveIndicatorEnabled(
-                    false
+                    true
             );
         }
     }

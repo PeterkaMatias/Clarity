@@ -85,14 +85,11 @@ public class RecursosActivity extends AppCompatActivity
                 R.id.bottomNavigationView
         );
 
-        /*
-         * Quita el indicador de fondo que puede
-         * superponerse con el ícono y el texto.
-         */
+
         if (bottomNavigation != null) {
 
             bottomNavigation.setItemActiveIndicatorEnabled(
-                    false
+                    true
             );
         }
     }
@@ -144,9 +141,7 @@ public class RecursosActivity extends AppCompatActivity
             return;
         }
 
-        /*
-         * Marca Recursos como pantalla activa.
-         */
+
         bottomNavigation.setSelectedItemId(
                 R.id.nav_recursos
         );
@@ -309,10 +304,7 @@ public class RecursosActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
-        /*
-         * Al regresar a esta pantalla,
-         * vuelve a marcar Recursos.
-         */
+
         if (bottomNavigation != null) {
 
             bottomNavigation.setSelectedItemId(
