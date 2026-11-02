@@ -62,6 +62,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE, " +
                 "FOREIGN KEY (IdTareaPadre) REFERENCES Tareas(IdTarea) ON DELETE CASCADE" +
                 ");");
+        //Temporizador
+        db.execSQL("CREATE TABLE Temporizador(" +
+                "IdTemporizador INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "IdUsuario INTEGER NOT NULL, " +
+                "IdTarea INTEGER, " +
+                "Duracion INTEGER NOT NULL, " +
+                "Fecha_inicio TEXT NOT NULL, " +
+                "Fecha_fin TEXT NOT NULL, "+
+                "Estado TEXT NOT NULL," +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE, " +
+                "FOREIGN KEY (IdTarea) REFERENCES Tareas(IdTarea) ON DELETE SET NULL" +
+                ");");
+        //RECOMPENZAS
+        db.execSQL("CREATE TABLE Recompenzas(" +
+                "IdRecompenza INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                "IdUsuario INTEGER NOT NULL, " +
+                "IdTarea INTEGER, " +
+                "Puntos INTEGER NOT NULL, " +
+                "Tipo TEXT NOT NULL, " +
+                "Descripcion TEXT NOT NULL, " +
+                "Fecha TEXT NOT NULL, " +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE, " +
+                "FOREIGN KEY (IdTarea) REFERENCES Tareas(IdTarea) ON DELETE SET NULL" +
+                ");");
+        //LOGROS
+        db.execSQL("CREATE TABLE Logros(" +
+                "IdLogro INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "Nombre TEXT NOT NULL, " +
+                "Descripcion TEXT, " +
+                "Requisito TEXT" +
+                ");");
+        //USUARIOLOGROS
+        db.execSQL("CREATE TABLE UsuarioLogros(" +
+                "IdUsuarioLogro INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "IdUsuario INTEGER NOT NULL, " +
+                "IdLogro INTEGER NOT NULL, " +
+                "Fecha_obtenido TEXT NOT NULL, " +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE, " +
+                "FOREIGN KEY (IdLogro) REFERENCES Logros(IdLogro) ON DELETE CASCADE" +
+                ");");
 
         // Consultas con el Chat
         db.execSQL("CREATE TABLE ConsultasChat (" +
