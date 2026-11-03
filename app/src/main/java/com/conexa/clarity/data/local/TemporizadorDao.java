@@ -29,7 +29,8 @@ public class TemporizadorDao {
 
         cv.put("Duracion", temporizador.getDuracion());
         cv.put("Fecha_inicio", temporizador.getFechaInicio());
-        cv.put("Fecha_fin", temporizador.getEstado());
+        cv.put("Fecha_fin", temporizador.getFechaFin());
+        cv.put("Estado", temporizador.getEstado());
 
         return db.insert("Temporizador", null, cv);
 

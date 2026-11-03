@@ -5,18 +5,18 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.conexa.clarity.data.model.Recompenzas;
+import com.conexa.clarity.data.model.Recompensas;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecompenzasDao {
+public class RecompensasDao {
     private final DatabaseHelper dbHelper;
-    public RecompenzasDao(Context context){
+    public RecompensasDao(Context context){
         this.dbHelper = DatabaseHelper.getInstance(context);
     }
 
-    public long agregar(Recompenzas recompensa) {
+    public long agregar(Recompensas recompensa) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
@@ -35,7 +35,7 @@ public class RecompenzasDao {
 
         return db.insert("Recompenzas", null, cv);
     }
-    public boolean modificar(Recompenzas recompensa) {
+    public boolean modificar(Recompensas recompensa) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
@@ -72,8 +72,8 @@ public class RecompenzasDao {
 
         return filas > 0;
     }
-    public List<Recompenzas> obtenerPorUsuario(int idUsuario) {
-        List<Recompenzas> lista = new ArrayList<>();
+    public List<Recompensas> obtenerPorUsuario(int idUsuario) {
+        List<Recompensas> lista = new ArrayList<>();
 
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
@@ -87,7 +87,7 @@ public class RecompenzasDao {
             while (c.moveToNext()) {
                 int indiceTarea = c.getColumnIndexOrThrow("IdTarea");
 
-                Recompenzas recompensa = new Recompenzas(
+                Recompensas recompensa = new Recompensas(
                         c.getInt(c.getColumnIndexOrThrow("IdRecompenza")),
                         c.getInt(c.getColumnIndexOrThrow("IdUsuario")),
                         c.isNull(indiceTarea) ? null : c.getInt(indiceTarea),

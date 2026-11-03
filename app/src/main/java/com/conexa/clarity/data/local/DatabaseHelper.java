@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "clarity.db";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     private static DatabaseHelper instance;
 
@@ -75,8 +75,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY (IdTarea) REFERENCES Tareas(IdTarea) ON DELETE SET NULL" +
                 ");");
         //RECOMPENZAS
-        db.execSQL("CREATE TABLE Recompenzas(" +
-                "IdRecompenza INTEGER PRIMARY KEY AUTOINCREMENT, "+
+        db.execSQL("CREATE TABLE Recompensas(" +
+                "IdRecompensa INTEGER PRIMARY KEY AUTOINCREMENT, "+
                 "IdUsuario INTEGER NOT NULL, " +
                 "IdTarea INTEGER, " +
                 "Puntos INTEGER NOT NULL, " +
@@ -175,14 +175,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert("Recursos", null, cv);
     }
 
-
+    //Sirve mientras seguimos haciendo cambios, despues hay que reemplazarlo
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS UsuarioLogros");
+        db.execSQL("DROP TABLE IF EXISTS Recompensas");
+        db.execSQL("DROP TABLE IF EXISTS Temporizador");
+        db.execSQL("DROP TABLE IF EXISTS Favoritos");
+
         // Estrategia segura: recrear todas las tablas
         db.execSQL("DROP TABLE IF EXISTS PreferenciaUsuario");
         db.execSQL("DROP TABLE IF EXISTS ConsultasChat");
         db.execSQL("DROP TABLE IF EXISTS Tareas");
-        db.execSQL("DROP TABLE IF EXISTS Favoritos");
+        db.execSQL("DROP TABLE IF EXISTS Logros");
         db.execSQL("DROP TABLE IF EXISTS Recursos");
         db.execSQL("DROP TABLE IF EXISTS Usuarios");
         onCreate(db);

@@ -1,6 +1,6 @@
 package com.conexa.clarity.data.model;
 
-public class Recompenzas {
+public class Recompensas {
     private int idRecompenza;
     private int idUsuario;
     private Integer idTarea;
@@ -9,7 +9,7 @@ public class Recompenzas {
     private String descripcion;
     private String fecha;
 
-    public Recompenzas(int idRecompenza, int idUsuario, Integer idTarea,
+    public Recompensas(int idRecompenza, int idUsuario, Integer idTarea,
                        int puntos, String tipo, String descripcion, String fecha){
         this.idRecompenza = idRecompenza;
         this.idUsuario = idUsuario;

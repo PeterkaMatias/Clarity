@@ -1,5 +1,7 @@
 package com.conexa.clarity.ui.timer;
 
+import static com.google.gson.internal.bind.util.ISO8601Utils.format;
+
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
@@ -15,17 +17,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.conexa.clarity.MainActivity;
 import com.conexa.clarity.R;
 import com.conexa.clarity.data.local.TareaDao;
+import com.conexa.clarity.data.local.TemporizadorDao;
 import com.conexa.clarity.data.model.Tarea;
 import com.conexa.clarity.ui.chat.ChatActivity;
 import com.conexa.clarity.ui.resources.RecursosActivity;
+import com.conexa.clarity.ui.tareas.TareasActivity;
+import com.conexa.clarity.util.SesionUsuario;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import com.conexa.clarity.data.model.Temporizador;
+import com.conexa.clarity.ui.tareas.TareasActivity;
+
 
 public class FocusTimerActivity extends AppCompatActivity {
+
 
     private boolean estaCorriendo = false;
 
@@ -45,18 +56,20 @@ public class FocusTimerActivity extends AppCompatActivity {
     private CountDownTimer temporizador;
 
     private TareaDao tareaDao;
+    private TemporizadorDao temporizadorDao;
     private List<Tarea> tareasPendientes;
     private Tarea tareaSeleccionada;
+    private String fechaInicioSesion;
 
     private TextView tvTiempoRestante;
     private TextView tvTituloTarea;
-    private TextView tvSubtituloTarea;
+    private TextView tvDescripcionTarea;
 
     private View cardTareaSeleccionada;
 
     private BottomNavigationView bottomNav;
 
-    private int idUsuarioActual = 1;
+    private int idUsuarioActual;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +77,11 @@ public class FocusTimerActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_focus_timer);
 
-        idUsuarioActual = getIntent().getIntExtra(
-                "id_usuario",
-                1
-        );
+        idUsuarioActual = SesionUsuario.obtenerId(this);
+
 
         tareaDao = new TareaDao(this);
+        temporizadorDao = new TemporizadorDao(this);
 
         inicializarVistas();
         configurarNavegacion();
@@ -93,8 +105,8 @@ public class FocusTimerActivity extends AppCompatActivity {
                 R.id.tvTituloTarea
         );
 
-        tvSubtituloTarea = findViewById(
-                R.id.tvSubtituloTarea
+        tvDescripcionTarea = findViewById(
+                R.id.tvDescripcionTarea
         );
 
         cardTareaSeleccionada = findViewById(
@@ -212,9 +224,14 @@ public class FocusTimerActivity extends AppCompatActivity {
     private void iniciarTemporizador() {
 
         if (tiempoRestante <= 0) {
+            tiempoRestante = tiempoSeleccionado;
+        }
 
-            tiempoRestante =
-                    tiempoSeleccionado;
+        if (fechaInicioSesion == null) {
+            fechaInicioSesion = new SimpleDateFormat(
+                    "yyyy-MM-dd HH:mm:ss",
+                    Locale.getDefault()
+            ).format(new Date());
         }
 
         estaCorriendo = true;
@@ -247,6 +264,7 @@ public class FocusTimerActivity extends AppCompatActivity {
             public void onFinish() {
 
                 tiempoRestante = 0;
+                guardarSesion();
                 estaCorriendo = false;
 
                 actualizarReloj();
@@ -268,6 +286,64 @@ public class FocusTimerActivity extends AppCompatActivity {
         }.start();
     }
 
+    private void guardarSesion(){
+        Temporizador sesion = new Temporizador(
+                0,
+                idUsuarioActual,
+                tareaSeleccionada != null ? tareaSeleccionada.getId() : null,
+                (int) (tiempoSeleccionado / 60000),
+                fechaInicioSesion,
+                new SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss",
+                        Locale.getDefault()
+                ).format(new Date()),
+                "Completado"
+        );
+        sesion.setIdUsuario(idUsuarioActual);
+
+        sesion.setIdTarea(
+                tareaSeleccionada != null
+                ? tareaSeleccionada.getId()
+                        : null
+        );
+
+        sesion.setDuracion(
+                (int)(tiempoSeleccionado / 60000)
+        );
+        sesion.setFechaInicio(fechaInicioSesion);
+
+        sesion.setFechaFin(
+                new SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss",
+                        Locale.getDefault()
+                ).format(new Date())
+        );
+
+        sesion.setEstado("Completado");
+
+        long resultado = temporizadorDao.agregar(sesion);
+        Toast.makeText(this, "Resultado de guardado: " + resultado, Toast.LENGTH_LONG).show();
+
+        if(resultado != -1){
+            Toast.makeText(
+                    this,
+                    "Sesion guardada correctamente",
+                    Toast.LENGTH_SHORT
+            ).show();
+            if (tareaSeleccionada != null) {
+
+                tareaDao.cambiarEstado(
+                        tareaSeleccionada.getIdTarea(),
+                        Tarea.ESTADO_COMPLETADA,
+                        new SimpleDateFormat(
+                                "yyyy-MM-dd HH:mm",
+                                Locale.getDefault()
+                        ).format(new Date())
+                );
+            }
+        }
+        fechaInicioSesion = null;
+    }
     private void pausarTemporizador() {
 
         if (temporizador != null) {
@@ -304,6 +380,7 @@ public class FocusTimerActivity extends AppCompatActivity {
         }
 
         estaCorriendo = false;
+        fechaInicioSesion = null;
 
         tiempoRestante =
                 tiempoSeleccionado;
@@ -470,9 +547,14 @@ public class FocusTimerActivity extends AppCompatActivity {
                                             .getTitulo()
                             );
 
-                            tvSubtituloTarea.setText(
-                                    "Tarea seleccionada para esta sesión"
-                            );
+                            String descripcion = tareaSeleccionada.getDescripcion();
+
+                            if (descripcion != null && !descripcion.trim().isEmpty()) {
+                                tvDescripcionTarea.setText(descripcion);
+                                tvDescripcionTarea.setVisibility(View.VISIBLE);
+                            } else {
+                                tvDescripcionTarea.setVisibility(View.GONE);
+                            }
                         }
                 )
                 .setNegativeButton(
@@ -541,10 +623,6 @@ public class FocusTimerActivity extends AppCompatActivity {
             Class<?> pantallaDestino
     ) {
 
-        /*
-         * Detiene el contador antes de abandonar
-         * la pantalla de Enfoque.
-         */
         if (temporizador != null) {
 
             temporizador.cancel();
