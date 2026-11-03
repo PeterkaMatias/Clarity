@@ -20,6 +20,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.conexa.clarity.util.SesionUsuario;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class TareasActivity extends AppCompatActivity
     private FloatingActionButton fabAgregar;
     private BottomNavigationView bottomNavigation;
 
-    private int idUsuarioActual = 1;
+    private int idUsuarioActual;
 
     private String filtroEstado = "TODAS";
     private String filtroPrioridad = "TODAS";
@@ -51,10 +52,7 @@ public class TareasActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_tareas);
 
-        idUsuarioActual = getIntent().getIntExtra(
-                "id_usuario",
-                1
-        );
+        idUsuarioActual = SesionUsuario.obtenerId(this);
 
         tareaDao = new TareaDao(this);
 

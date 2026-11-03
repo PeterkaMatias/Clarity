@@ -30,6 +30,7 @@ import com.conexa.clarity.ui.resources.RecursosActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
+import com.conexa.clarity.util.SesionUsuario;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -108,10 +109,7 @@ public class ChatActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_chat);
 
-        idUsuario = getIntent().getIntExtra(
-                "id_usuario",
-                -1
-        );
+        idUsuario = SesionUsuario.obtenerId(this);
 
         claudeApi = RetrofitClient
                 .getClient()

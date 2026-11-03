@@ -14,6 +14,9 @@ import androidx.appcompat.widget.SwitchCompat;
 
 import com.conexa.clarity.R;
 import com.conexa.clarity.data.local.PreferenciaUsuarioDao;
+import com.conexa.clarity.util.SesionUsuario;
+import android.content.Intent;
+import com.conexa.clarity.ui.auth.LoginActivity;
 
 public class AjustesActivity extends AppCompatActivity {
 
@@ -31,13 +34,13 @@ public class AjustesActivity extends AppCompatActivity {
     private Button btnGuardar;
     private Button btnRestaurar;
 
-    // Valor temporal para pruebas.
-    // Después debe reemplazarse por el ID del usuario autenticado.
-    private final int idUsuarioActual = 1;
+    private Button btnCerrarSesion;
+    private int idUsuarioActual;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        idUsuarioActual = SesionUsuario.obtenerId(this);
         setContentView(R.layout.activity_ajustes);
 
         dao = new PreferenciaUsuarioDao(this);
@@ -61,6 +64,7 @@ public class AjustesActivity extends AppCompatActivity {
 
         btnGuardar = findViewById(R.id.btnGuardar);
         btnRestaurar = findViewById(R.id.btnRestaurar);
+        btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
     }
 
     private void establecerValoresPredeterminados() {
@@ -135,7 +139,14 @@ public class AjustesActivity extends AppCompatActivity {
 
         btnRestaurar.setOnClickListener(v -> {
             establecerValoresPredeterminados();
-            guardarPreferencias();
+            guardarPreferencias();});
+
+        btnCerrarSesion.setOnClickListener(v -> {
+            SesionUsuario.cerrar(this);
+
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         });
     }
 

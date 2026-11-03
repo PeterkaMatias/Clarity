@@ -16,6 +16,7 @@ import com.conexa.clarity.R;
 import com.conexa.clarity.data.local.TareaDao;
 import com.conexa.clarity.data.model.Tarea;
 import com.google.android.material.chip.ChipGroup;
+import com.conexa.clarity.util.SesionUsuario;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class DesgloseTareaActivity extends AppCompatActivity {
 
     private int idTareaPadre = 0;
     private String tituloTareaPadre = "";
-    private int idUsuarioActual = 1;
+    private int idUsuarioActual;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -49,8 +50,7 @@ public class DesgloseTareaActivity extends AppCompatActivity {
         // Obtener datos de la tarea recibida
         idTareaPadre = getIntent().getIntExtra("id_tarea_padre", 0);
         tituloTareaPadre = getIntent().getStringExtra("titulo_tarea");
-        idUsuarioActual = getIntent().getIntExtra("id_usuario", 1);
-
+        idUsuarioActual = SesionUsuario.obtenerId(this);
         if (tituloTareaPadre == null) tituloTareaPadre = "Tarea sin titulo";
 
         // Vincular vistas

@@ -22,6 +22,7 @@ import com.conexa.clarity.ui.settings.AjustesActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
+import com.conexa.clarity.util.SesionUsuario;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +43,12 @@ public class MainActivity extends AppCompatActivity {
     private TareaDao tareaDao;
     private UsuarioDao usuarioDao;
 
-    private final int idUsuarioActual = 1;
+    private int idUsuarioActual;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        idUsuarioActual = SesionUsuario.obtenerId(this);
         setContentView(R.layout.activity_main);
 
         try {

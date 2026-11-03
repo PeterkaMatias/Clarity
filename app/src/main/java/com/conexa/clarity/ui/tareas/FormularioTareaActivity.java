@@ -19,6 +19,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.textfield.TextInputEditText;
+import com.conexa.clarity.util.SesionUsuario;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -33,7 +34,7 @@ public class FormularioTareaActivity extends AppCompatActivity {
 
     private TareaDao tareaDao;
     private Tarea tareaActual; // null si estamos creando una nueva
-    private int idUsuarioActual = 1;
+    private int idUsuarioActual;
 
     private String fechaSeleccionada= "";
     private String horaSeleccionada = "";
@@ -44,7 +45,7 @@ public class FormularioTareaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_formulario_tarea);
 
         tareaDao = new TareaDao(this);
-        idUsuarioActual = getIntent().getIntExtra("id_usuario", 1);
+        idUsuarioActual = SesionUsuario.obtenerId(this);
 
         // Vincular vistas
         tvTituloPantalla     = findViewById(R.id.tvTituloPantalla);
