@@ -216,6 +216,14 @@ public class FocusTimerActivity extends AppCompatActivity {
 
             } else {
 
+                if(tareaSeleccionada == null){
+                    Toast.makeText(
+                            this,
+                            "Primero tenés que seleccionar una tarea",
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    return;
+                }
                 iniciarTemporizador();
             }
         });
