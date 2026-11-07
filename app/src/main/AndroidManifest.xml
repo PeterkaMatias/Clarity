@@ -90,6 +90,11 @@
             android:name=".ui.PerfilesMenoresActivity"
             android:exported="false" />
 
+        <!-- Tareas asignadas a perfiles de menores -->
+        <activity
+            android:name=".ui.TareasMenorActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

@@ -100,7 +100,14 @@ public class TareaDao {
     // ===== Compatibilidad con el Dashboard (MainActivity) =====
     /** Usado por MainActivity: devuelve las tareas principales del usuario */
     public List<Tarea> obtenerTareasPorUsuario(int idUsuario) {
-        return obtenerPrincipales(idUsuario);
+        return consultar(
+                "SELECT * FROM Tareas " +
+                        "WHERE idUsuario = ? " +
+                        "AND IdPerfilMenor IS NULL " +
+                        "AND IdTareaPadre IS NULL " +
+                        "ORDER BY Fecha_vencimiento ASC",
+                new String[]{String.valueOf(idUsuario)}
+        );
     }
 
     /** Usado por MainActivity: marca una tarea como completada o pendiente */
@@ -279,5 +286,261 @@ public class TareaDao {
 
         return fechas;
     }
+
+
+    // ===== MODO PARENTAL =====
+    public long asignarTareaMenor(
+            int idUsuario,
+            int idPerfilMenor,
+            String titulo,
+            String descripcion,
+            String prioridad
+    ) {
+
+        if (idUsuario <= 0 ||
+                idPerfilMenor <= 0 ||
+                titulo == null ||
+                titulo.trim().isEmpty()) {
+            return -1;
+        }
+
+        if (!"ALTA".equals(prioridad) &&
+                !"MEDIA".equals(prioridad) &&
+                !"BAJA".equals(prioridad)) {
+            return -1;
+        }
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        // Verificar que el menor pertenezca al adulto
+        try (Cursor cursor = db.rawQuery(
+                "SELECT 1 FROM PerfilMenor " +
+                        "WHERE IdPerfilMenor = ? AND IdUsuario = ?",
+                new String[]{
+                        String.valueOf(idPerfilMenor),
+                        String.valueOf(idUsuario)
+                })) {
+
+            if (!cursor.moveToFirst()) {
+                return -1;
+            }
+        }
+
+        ContentValues valores = new ContentValues();
+
+        valores.put("idUsuario", idUsuario);
+        valores.put("IdPerfilMenor", idPerfilMenor);
+        valores.put("Titulo", titulo.trim());
+        valores.put("Descripcion", descripcion == null ? "" : descripcion.trim());
+        valores.put("Estado", "PENDIENTE");
+        valores.put("Prioridad", prioridad);
+
+        String fecha = new java.text.SimpleDateFormat(
+                "yyyy-MM-dd HH:mm",
+                java.util.Locale.getDefault()
+        ).format(new java.util.Date());
+
+        valores.put("Fecha_creacion", fecha);
+        valores.putNull("Fecha_finalizado");
+        valores.putNull("Fecha_vencimiento");
+        valores.putNull("IdTareaPadre");
+
+        return db.insert("Tareas", null, valores);
+    }
+
+    public List<Tarea> obtenerTareasDeMenor(
+            int idUsuario,
+            int idPerfilMenor
+    ) {
+
+        return consultar(
+                "SELECT * FROM Tareas " +
+                        "WHERE idUsuario = ? " +
+                        "AND IdPerfilMenor = ? " +
+                        "AND IdTareaPadre IS NULL " +
+                        "ORDER BY idTarea DESC",
+                new String[]{
+                        String.valueOf(idUsuario),
+                        String.valueOf(idPerfilMenor)
+                }
+        );
+    }
+
+    public boolean cambiarEstadoTareaMenor(
+            int idUsuario,
+            int idPerfilMenor,
+            int idTarea,
+            boolean completada
+    ) {
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues valores = new ContentValues();
+
+        valores.put("Estado", completada ? "COMPLETADA" : "PENDIENTE");
+
+        if (completada) {
+
+            String fecha = new java.text.SimpleDateFormat(
+                    "yyyy-MM-dd HH:mm",
+                    java.util.Locale.getDefault()
+            ).format(new java.util.Date());
+
+            valores.put("Fecha_finalizado", fecha);
+
+        } else {
+            valores.putNull("Fecha_finalizado");
+        }
+
+        int filas = db.update(
+                "Tareas",
+                valores,
+                "idTarea = ? AND idUsuario = ? " +
+                        "AND IdPerfilMenor = ? " +
+                        "AND IdTareaPadre IS NULL",
+                new String[]{
+                        String.valueOf(idTarea),
+                        String.valueOf(idUsuario),
+                        String.valueOf(idPerfilMenor)
+                }
+        );
+
+        return filas > 0;
+    }
+
+    public long asignarTareaMenorConFecha(
+            int idUsuario,
+            int idPerfilMenor,
+            String titulo,
+            String descripcion,
+            String prioridad,
+            String fechaVencimiento
+    ) {
+        if (idUsuario <= 0 || idPerfilMenor <= 0 ||
+                titulo == null || titulo.trim().isEmpty() ||
+                !prioridadValidaMenor(prioridad)) {
+            return -1;
+        }
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        try (Cursor c = db.rawQuery(
+                "SELECT 1 FROM PerfilMenor " +
+                        "WHERE IdPerfilMenor = ? AND IdUsuario = ?",
+                new String[]{
+                        String.valueOf(idPerfilMenor),
+                        String.valueOf(idUsuario)
+                })) {
+            if (!c.moveToFirst()) return -1;
+        }
+
+        ContentValues cv = new ContentValues();
+        cv.put("idUsuario", idUsuario);
+        cv.put("IdPerfilMenor", idPerfilMenor);
+        cv.put("Titulo", titulo.trim());
+        cv.put("Descripcion", descripcion == null ? "" : descripcion.trim());
+        cv.put("Prioridad", prioridad);
+        cv.put("Estado", "PENDIENTE");
+
+        String fechaActual = new java.text.SimpleDateFormat(
+                "yyyy-MM-dd HH:mm",
+                java.util.Locale.getDefault()
+        ).format(new java.util.Date());
+
+        cv.put("Fecha_creacion", fechaActual);
+        cv.putNull("Fecha_finalizado");
+        cv.putNull("IdTareaPadre");
+
+        if (fechaVencimiento == null || fechaVencimiento.trim().isEmpty()) {
+            cv.putNull("Fecha_vencimiento");
+        } else {
+            cv.put("Fecha_vencimiento", fechaVencimiento);
+        }
+
+        return db.insert("Tareas", null, cv);
+    }
+
+    public boolean editarTareaMenor(
+            int idUsuario,
+            int idPerfilMenor,
+            int idTarea,
+            String titulo,
+            String descripcion,
+            String prioridad,
+            String fechaVencimiento
+    ) {
+        if (idUsuario <= 0 || idPerfilMenor <= 0 ||
+                idTarea <= 0 ||
+                titulo == null || titulo.trim().isEmpty() ||
+                !prioridadValidaMenor(prioridad)) {
+            return false;
+        }
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put("Titulo", titulo.trim());
+        cv.put("Descripcion", descripcion == null ? "" : descripcion.trim());
+        cv.put("Prioridad", prioridad);
+
+        if (fechaVencimiento == null || fechaVencimiento.trim().isEmpty()) {
+            cv.putNull("Fecha_vencimiento");
+        } else {
+            cv.put("Fecha_vencimiento", fechaVencimiento);
+        }
+
+        int filas = db.update(
+                "Tareas",
+                cv,
+                "idTarea = ? AND idUsuario = ? " +
+                        "AND IdPerfilMenor = ? AND IdTareaPadre IS NULL " +
+                        "AND EXISTS (SELECT 1 FROM PerfilMenor p " +
+                        "WHERE p.IdPerfilMenor = Tareas.IdPerfilMenor " +
+                        "AND p.IdUsuario = Tareas.idUsuario)",
+                new String[]{
+                        String.valueOf(idTarea),
+                        String.valueOf(idUsuario),
+                        String.valueOf(idPerfilMenor)
+                }
+        );
+
+        return filas > 0;
+    }
+
+    public boolean eliminarTareaMenor(
+            int idUsuario,
+            int idPerfilMenor,
+            int idTarea
+    ) {
+        if (idUsuario <= 0 || idPerfilMenor <= 0 || idTarea <= 0) {
+            return false;
+        }
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        int filas = db.delete(
+                "Tareas",
+                "idTarea = ? AND idUsuario = ? " +
+                        "AND IdPerfilMenor = ? AND IdTareaPadre IS NULL " +
+                        "AND EXISTS (SELECT 1 FROM PerfilMenor p " +
+                        "WHERE p.IdPerfilMenor = Tareas.IdPerfilMenor " +
+                        "AND p.IdUsuario = Tareas.idUsuario)",
+                new String[]{
+                        String.valueOf(idTarea),
+                        String.valueOf(idUsuario),
+                        String.valueOf(idPerfilMenor)
+                }
+        );
+
+        return filas > 0;
+    }
+
+    private boolean prioridadValidaMenor(String prioridad) {
+        return "ALTA".equals(prioridad) ||
+                "MEDIA".equals(prioridad) ||
+                "BAJA".equals(prioridad);
+    }
+
+
 
 }

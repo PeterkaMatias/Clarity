@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/fondo_app"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/tvTituloMenor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tareas del menor"
+            android:textColor="@color/verde_principal"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Asigná actividades y acompañá su progreso."
+            android:textColor="@color/gris_texto"
+            android:textSize="14sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardBackgroundColor="@color/blanco_superficie"
+            app:cardCornerRadius="16dp"
+            app:strokeColor="@color/verde_secundario"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Nueva tarea"
+                    android:textColor="@color/gris_texto"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/etTituloTareaMenor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Título de la tarea"
+                    android:inputType="textCapSentences"
+                    android:maxLines="1"
+                    android:textColor="@color/gris_texto"
+                    android:textColorHint="@color/verde_principal" />
+
+                <EditText
+                    android:id="@+id/etDescripcionTareaMenor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="Descripción (opcional)"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:minLines="2"
+                    android:textColor="@color/gris_texto"
+                    android:textColorHint="@color/verde_principal" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Prioridad"
+                    android:textColor="@color/gris_texto"
+                    android:textSize="15sp" />
+
+                <Spinner
+                    android:id="@+id/spinnerPrioridadMenor"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp" />
+
+                <Button
+                    android:id="@+id/btnAsignarTareaMenor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="@color/verde_principal"
+                    android:text="Asignar tarea"
+                    android:textColor="@color/blanco_superficie" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Tareas asignadas"
+            android:textColor="@color/gris_texto"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvResumenTareasMenor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Completadas: 0 de 0"
+            android:textColor="@color/verde_principal"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tvSinTareasMenor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:padding="20dp"
+            android:text="Todavía no hay tareas asignadas."
+            android:textColor="@color/gris_texto"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/contenedorTareasMenor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+
+</ScrollView>

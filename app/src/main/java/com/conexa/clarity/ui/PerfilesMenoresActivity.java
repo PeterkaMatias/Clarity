@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,10 +43,7 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
 
         if (idUsuarioActual == SesionUsuario.SIN_SESION) {
 
-            Intent intent = new Intent(
-                    this,
-                    LoginActivity.class
-            );
+            Intent intent = new Intent(this, LoginActivity.class);
 
             intent.addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK |
@@ -70,21 +68,13 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
         etNombreMenor = findViewById(R.id.etNombreMenor);
         etEdadMenor = findViewById(R.id.etEdadMenor);
 
-        contenedorMenores = findViewById(
-                R.id.contenedorMenores
-        );
+        contenedorMenores = findViewById(R.id.contenedorMenores);
 
-        tvSinMenores = findViewById(
-                R.id.tvSinMenores
-        );
+        tvSinMenores = findViewById(R.id.tvSinMenores);
 
-        Button btnAgregarMenor = findViewById(
-                R.id.btnAgregarMenor
-        );
+        Button btnAgregarMenor = findViewById(R.id.btnAgregarMenor);
 
-        btnAgregarMenor.setOnClickListener(
-                v -> registrarMenor()
-        );
+        btnAgregarMenor.setOnClickListener(v -> registrarMenor());
 
         cargarMenores();
     }
@@ -93,18 +83,14 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (preferenciaDao != null &&
-                !modoParentalDisponible()) {
+        if (preferenciaDao != null && !modoParentalDisponible()) {
             finish();
         }
     }
 
     private boolean modoParentalDisponible() {
 
-        boolean activo =
-                preferenciaDao.estaModoParentalActivo(
-                        idUsuarioActual
-                );
+        boolean activo = preferenciaDao.estaModoParentalActivo(idUsuarioActual);
 
         if (!activo) {
             Toast.makeText(
@@ -119,16 +105,12 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
 
     private void registrarMenor() {
 
-        String nombre = etNombreMenor
-                .getText().toString().trim();
+        String nombre = etNombreMenor.getText().toString().trim();
 
-        String edadTexto = etEdadMenor
-                .getText().toString().trim();
+        String edadTexto = etEdadMenor.getText().toString().trim();
 
         if (nombre.isEmpty()) {
-            etNombreMenor.setError(
-                    "Ingresá el nombre del menor"
-            );
+            etNombreMenor.setError("Ingresá el nombre del menor");
             return;
         }
 
@@ -147,9 +129,7 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
         }
 
         if (edad < 0 || edad > 17) {
-            etEdadMenor.setError(
-                    "Ingresá una edad entre 0 y 17"
-            );
+            etEdadMenor.setError("Ingresá una edad entre 0 y 17");
             return;
         }
 
@@ -185,28 +165,18 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
         cargarMenores();
     }
 
+
     private void cargarMenores() {
 
         contenedorMenores.removeAllViews();
 
         int cantidad = 0;
 
-        try (Cursor cursor =
-                     perfilMenorDao.obtenerMenores(
-                             idUsuarioActual
-                     )) {
+        try (Cursor cursor = perfilMenorDao.obtenerMenores(idUsuarioActual)) {
 
-            int indiceId = cursor.getColumnIndexOrThrow(
-                    "IdPerfilMenor"
-            );
-
-            int indiceNombre = cursor.getColumnIndexOrThrow(
-                    "Nombre"
-            );
-
-            int indiceEdad = cursor.getColumnIndexOrThrow(
-                    "Edad"
-            );
+            int indiceId = cursor.getColumnIndexOrThrow("IdPerfilMenor");
+            int indiceNombre = cursor.getColumnIndexOrThrow("Nombre");
+            int indiceEdad = cursor.getColumnIndexOrThrow("Edad");
 
             while (cursor.moveToNext()) {
 
@@ -214,17 +184,12 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
                 String nombre = cursor.getString(indiceNombre);
                 int edad = cursor.getInt(indiceEdad);
 
-                // Contenedor de cada perfil
+                // Contenedor principal del perfil
                 LinearLayout fila = new LinearLayout(this);
                 fila.setOrientation(LinearLayout.VERTICAL);
 
                 int padding = dp(12);
-                fila.setPadding(
-                        padding,
-                        padding,
-                        padding,
-                        padding
-                );
+                fila.setPadding(padding, padding, padding, padding);
 
                 LinearLayout.LayoutParams parametrosFila =
                         new LinearLayout.LayoutParams(
@@ -242,13 +207,14 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
                         )
                 );
 
+                // Encabezado horizontal
+                LinearLayout encabezado = new LinearLayout(this);
+                encabezado.setOrientation(LinearLayout.HORIZONTAL);
+                encabezado.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
                 // Nombre y edad
                 TextView tvPerfil = new TextView(this);
-
-                tvPerfil.setText(
-                        nombre + " | " + edad + " años"
-                );
-
+                tvPerfil.setText(nombre + " | " + edad + " años");
                 tvPerfil.setTextSize(16);
                 tvPerfil.setTextColor(
                         ContextCompat.getColor(
@@ -257,64 +223,101 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
                         )
                 );
 
-                fila.addView(tvPerfil);
+                encabezado.addView(
+                        tvPerfil,
+                        new LinearLayout.LayoutParams(
+                                0,
+                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                1
+                        )
+                );
 
-                // Contenedor horizontal de botones
-                LinearLayout botones = new LinearLayout(this);
-                botones.setOrientation(LinearLayout.HORIZONTAL);
+                // Ícono editar
+                ImageButton btnEditar = new ImageButton(this);
+                btnEditar.setImageResource(R.drawable.ic_editar);
+                btnEditar.setContentDescription("Editar perfil");
+                btnEditar.setBackgroundTintList(
+                        android.content.res.ColorStateList.valueOf(
+                                android.graphics.Color.TRANSPARENT
+                        )
+                );
+                btnEditar.setImageTintList(
+                        ContextCompat.getColorStateList(
+                                this,
+                                R.color.verde_principal
+                        )
+                );
 
-                // Botón Editar
-                Button btnEditar = new Button(this);
-                btnEditar.setText("Editar");
+                // Ícono eliminar
+                ImageButton btnEliminar = new ImageButton(this);
+                btnEliminar.setImageResource(R.drawable.ic_eliminar);
+                btnEliminar.setContentDescription("Eliminar perfil");
+                btnEliminar.setBackgroundTintList(
+                        android.content.res.ColorStateList.valueOf(
+                                android.graphics.Color.TRANSPARENT
+                        )
+                );
+                btnEliminar.setImageTintList(
+                        ContextCompat.getColorStateList(
+                                this,
+                                R.color.gris_texto
+                        )
+                );
 
-                // Botón Eliminar
-                Button btnEliminar = new Button(this);
-                btnEliminar.setText("Eliminar");
-
-                botones.addView(
+                encabezado.addView(
                         btnEditar,
-                        new LinearLayout.LayoutParams(
-                                0,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                1
-                        )
+                        new LinearLayout.LayoutParams(dp(48), dp(48))
                 );
 
-                botones.addView(
+                encabezado.addView(
                         btnEliminar,
-                        new LinearLayout.LayoutParams(
-                                0,
-                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                1
-                        )
+                        new LinearLayout.LayoutParams(dp(48), dp(48))
                 );
 
-                fila.addView(botones);
-                contenedorMenores.addView(fila);
+                fila.addView(encabezado);
 
+                // Botón para abrir tareas del menor
+                Button btnVerTareas = new Button(this);
+                btnVerTareas.setText("Ver tareas");
+
+                fila.addView(btnVerTareas);
+
+                // Eventos
                 btnEditar.setOnClickListener(v ->
-                        mostrarDialogoEditar(
-                                idPerfilMenor,
-                                nombre,
-                                edad
-                        )
+                        mostrarDialogoEditar(idPerfilMenor, nombre, edad)
                 );
 
                 btnEliminar.setOnClickListener(v ->
-                        confirmarEliminar(
-                                idPerfilMenor,
-                                nombre
-                        )
+                        confirmarEliminar(idPerfilMenor, nombre)
                 );
+
+                btnVerTareas.setOnClickListener(v -> {
+
+                    if (!modoParentalDisponible()) {
+                        finish();
+                        return;
+                    }
+
+                    Intent intent = new Intent(
+                            PerfilesMenoresActivity.this,
+                            TareasMenorActivity.class
+                    );
+
+                    intent.putExtra("id_perfil_menor", idPerfilMenor);
+                    intent.putExtra("nombre_menor", nombre);
+
+                    startActivity(intent);
+                });
+
+                contenedorMenores.addView(fila);
 
                 cantidad++;
             }
         }
 
-        tvSinMenores.setVisibility(
-                cantidad == 0 ? View.VISIBLE : View.GONE
-        );
+        tvSinMenores.setVisibility(cantidad == 0 ? View.VISIBLE : View.GONE);
     }
+
 
     private void mostrarDialogoEditar(
             int idPerfilMenor,
@@ -343,9 +346,7 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
 
         EditText inputEdad = new EditText(this);
         inputEdad.setHint("Edad");
-        inputEdad.setInputType(
-                android.text.InputType.TYPE_CLASS_NUMBER
-        );
+        inputEdad.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         inputEdad.setText(String.valueOf(edadActual));
 
         formulario.addView(inputNombre);
@@ -364,16 +365,12 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
                     AlertDialog.BUTTON_POSITIVE
             ).setOnClickListener(v -> {
 
-                String nombre = inputNombre
-                        .getText().toString().trim();
+                String nombre = inputNombre.getText().toString().trim();
 
-                String edadTexto = inputEdad
-                        .getText().toString().trim();
+                String edadTexto = inputEdad.getText().toString().trim();
 
                 if (nombre.isEmpty()) {
-                    inputNombre.setError(
-                            "Ingresá un nombre"
-                    );
+                    inputNombre.setError("Ingresá un nombre");
                     return;
                 }
 
@@ -382,16 +379,12 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
                 try {
                     edad = Integer.parseInt(edadTexto);
                 } catch (NumberFormatException e) {
-                    inputEdad.setError(
-                            "Ingresá una edad válida"
-                    );
+                    inputEdad.setError("Ingresá una edad válida");
                     return;
                 }
 
                 if (edad < 0 || edad > 17) {
-                    inputEdad.setError(
-                            "La edad debe estar entre 0 y 17"
-                    );
+                    inputEdad.setError("La edad debe estar entre 0 y 17");
                     return;
                 }
 
@@ -465,10 +458,7 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
 
         new AlertDialog.Builder(this)
                 .setTitle("Eliminar perfil")
-                .setMessage(
-                        "¿Querés eliminar el perfil de " +
-                                nombre + "? Esta acción no se puede deshacer."
-                )
+                .setMessage("¿Querés eliminar el perfil de " + nombre + "? Esta acción no se puede deshacer.")
                 .setNegativeButton("Cancelar", null)
                 .setPositiveButton(
                         "Eliminar",
@@ -505,14 +495,10 @@ public class PerfilesMenoresActivity extends AppCompatActivity {
                                 ).show();
                             }
                         }
-                )
-                .show();
+                ).show();
     }
 
     private int dp(int valor) {
-        return Math.round(
-                valor * getResources()
-                        .getDisplayMetrics().density
-        );
+        return Math.round(valor * getResources().getDisplayMetrics().density);
     }
 }
