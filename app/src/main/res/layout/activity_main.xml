@@ -23,7 +23,7 @@
             android:orientation="vertical"
             android:padding="20dp">
 
-            <!-- ENCABEZADO -->
+            <!-- ENCABEZADO COMÚN A AMBOS MODOS -->
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -57,6 +57,16 @@
                 </LinearLayout>
 
                 <ImageButton
+                    android:id="@+id/btnAbrirLogros"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Logros y progreso"
+                    android:src="@drawable/ic_logros"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <ImageButton
                     android:id="@+id/btnAbrirAjustes"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
@@ -67,155 +77,240 @@
 
             </LinearLayout>
 
-            <!-- TARJETA DE PROGRESO -->
+            <!-- ======================================= -->
+            <!-- PANEL GENERAL                          -->
+            <!-- ======================================= -->
 
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
+                android:id="@+id/panelGeneral"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                app:cardBackgroundColor="@color/blanco_superficie"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeColor="@color/verde_secundario"
-                app:strokeWidth="1dp">
+                android:orientation="vertical"
+                android:visibility="visible">
 
-                <LinearLayout
+                <!-- TARJETA DE PROGRESO -->
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_marginTop="20dp"
+                    app:cardBackgroundColor="@color/blanco_superficie"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/verde_secundario"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvNivelUsuario"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Modo General"
+                                android:textColor="@color/gris_texto"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvPuntosTotales"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="✨ 0 pts"
+                                android:textColor="@color/verde_principal"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <com.google.android.material.progressindicator.LinearProgressIndicator
+                            android:id="@+id/progresoNivel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="25"
+                            app:indicatorColor="@color/verde_principal"
+                            app:trackColor="@color/arena_decorativo"
+                            app:trackCornerRadius="8dp"
+                            app:trackThickness="8dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- ACCESO RÁPIDO AL TEMPORIZADOR -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardFocusRapido"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/arena_decorativo"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:padding="16dp">
 
-                        <TextView
-                            android:id="@+id/tvNivelUsuario"
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:contentDescription="Temporizador de enfoque"
+                            android:src="@drawable/ic_temporizador"
+                            app:tint="@color/gris_texto" />
+
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
                             android:layout_weight="1"
-                            android:text="Nivel 1 - Explorador"
-                            android:textColor="@color/gris_texto"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/tvPuntosTotales"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="✨ 0 pts"
-                            android:textColor="@color/verde_principal"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Modo Enfoque (Focus Timer)"
+                                android:textColor="@color/gris_texto"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Iniciá un bloque corto para vencer la procrastinación"
+                                android:textColor="@color/gris_texto"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
-                    <com.google.android.material.progressindicator.LinearProgressIndicator
-                        android:id="@+id/progresoNivel"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:indeterminate="false"
-                        android:max="100"
-                        android:progress="25"
-                        app:indicatorColor="@color/verde_principal"
-                        app:trackColor="@color/arena_decorativo"
-                        app:trackCornerRadius="8dp"
-                        app:trackThickness="8dp" />
+                </com.google.android.material.card.MaterialCardView>
 
-                </LinearLayout>
+                <!-- TÍTULO DE TAREAS -->
 
-            </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="12dp"
+                    android:text="Mis focos de hoy"
+                    android:textColor="@color/gris_texto"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-            <!-- ACCESO RÁPIDO AL TEMPORIZADOR -->
+                <!-- LISTA DE TAREAS -->
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardFocusRapido"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:cardBackgroundColor="@color/arena_decorativo"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp">
-
-                <LinearLayout
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvTareasHoy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
+                    android:nestedScrollingEnabled="false" />
 
-                    <ImageView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:contentDescription="Temporizador de enfoque"
-                        android:src="@drawable/ic_temporizador"
-                        app:tint="@color/gris_texto" />
+                <!-- ESTADO SIN TAREAS -->
+
+                <TextView
+                    android:id="@+id/tvSinTareas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="24dp"
+                    android:text="¡Todo despejado por hoy! 🎉&#10;Disfrutá tu descanso o agregá una nueva tarea."
+                    android:textColor="@color/gris_texto"
+                    android:textSize="14sp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- ======================================= -->
+            <!-- PANEL PARENTAL                         -->
+            <!-- ======================================= -->
+
+            <LinearLayout
+                android:id="@+id/panelParental"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- TÍTULO -->
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Panel Parental"
+                    android:textColor="@color/verde_principal"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- TARJETA DE GESTIÓN -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="@color/blanco_superficie"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/verde_secundario"
+                    app:strokeWidth="1dp">
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:padding="20dp">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Modo Enfoque (Focus Timer)"
+                            android:text="Gestión del menor"
                             android:textColor="@color/gris_texto"
-                            android:textSize="16sp"
+                            android:textSize="18sp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Iniciá un bloque corto para vencer la procrastinación"
+                            android:layout_marginTop="10dp"
+                            android:text="Desde este espacio podrás crear un perfil para el menor, organizar sus tareas y acompañar su progreso."
                             android:textColor="@color/gris_texto"
-                            android:textSize="12sp" />
+                            android:textSize="15sp"
+                            android:lineSpacingExtra="4dp" />
+
+                        <Button
+                            android:id="@+id/btnAdministrarMenores"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="Administrar perfiles de menores"
+                            android:backgroundTint="@color/verde_principal"
+                            android:textColor="@color/blanco_superficie" />
 
                     </LinearLayout>
 
-                </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- TÍTULO DE TAREAS -->
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp"
-                android:text="Mis focos de hoy"
-                android:textColor="@color/gris_texto"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <!-- LISTA DE TAREAS -->
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvTareasHoy"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
-
-            <!-- ESTADO SIN TAREAS -->
-
-            <TextView
-                android:id="@+id/tvSinTareas"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="24dp"
-                android:text="¡Todo despejado por hoy! 🎉&#10;Disfrutá tu descanso o agregá una nueva tarea."
-                android:textColor="@color/gris_texto"
-                android:textSize="14sp"
-                android:visibility="gone" />
+            </LinearLayout>
 
         </LinearLayout>
 

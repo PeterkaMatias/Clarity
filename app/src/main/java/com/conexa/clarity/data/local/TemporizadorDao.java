@@ -8,7 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import com.conexa.clarity.data.model.Temporizador;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TemporizadorDao {
     private final DatabaseHelper dbHelper;
@@ -102,5 +104,77 @@ public class TemporizadorDao {
         }
 
         return lista;
+    }
+    public int sumarMinutosPorPeriodo(
+            int idUsuario,
+            String fechaDesde,
+            String fechaHasta) {
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT COALESCE(SUM(Duracion), 0) FROM Temporizador " +
+                "WHERE IdUsuario = ? " +
+                "AND Estado = 'Completado' " +
+                "AND Fecha_inicio >= ? " +
+                "AND Fecha_inicio < ?";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario),
+                fechaDesde,
+                fechaHasta
+        })) {
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        }
+    }
+    public Map<String, Integer> sumarMinutosPorHora(
+            int idUsuario, String fechaDesde, String fechaHasta) {
+
+        Map<String, Integer> resultados = new HashMap<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT substr(Fecha_inicio, 12, 2), SUM(Duracion) " +
+                "FROM Temporizador " +
+                "WHERE IdUsuario = ? " +
+                "AND Estado = 'Completado' " +
+                "AND Fecha_inicio >= ? " +
+                "AND Fecha_inicio < ? " +
+                "GROUP BY substr(Fecha_inicio, 12, 2)";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario), fechaDesde, fechaHasta
+        })) {
+            while (c.moveToNext()) {
+                resultados.put(c.getString(0), c.getInt(1));
+            }
+        }
+
+        return resultados;
+    }
+    public Map<String, Integer> sumarMinutosPorFecha(
+            int idUsuario, String fechaDesde, String fechaHasta) {
+
+        Map<String, Integer> resultados = new HashMap<>();
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT substr(Fecha_inicio, 1, 10), SUM(Duracion) " +
+                "FROM Temporizador " +
+                "WHERE IdUsuario = ? " +
+                "AND Estado = 'Completado' " +
+                "AND Fecha_inicio >= ? " +
+                "AND Fecha_inicio < ? " +
+                "GROUP BY substr(Fecha_inicio, 1, 10)";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario),
+                fechaDesde,
+                fechaHasta
+        })) {
+            while (c.moveToNext()) {
+                resultados.put(c.getString(0), c.getInt(1));
+            }
+        }
+
+        return resultados;
     }
 }

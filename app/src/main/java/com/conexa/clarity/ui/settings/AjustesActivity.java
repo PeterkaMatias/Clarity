@@ -1,6 +1,7 @@
 
 package com.conexa.clarity.ui.settings;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.Button;
@@ -12,7 +13,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 
+
+
 import com.conexa.clarity.R;
+import com.conexa.clarity.util.SesionUsuario;
+import com.conexa.clarity.ui.auth.LoginActivity;
 import com.conexa.clarity.data.local.PreferenciaUsuarioDao;
 
 public class AjustesActivity extends AppCompatActivity {
@@ -27,18 +32,34 @@ public class AjustesActivity extends AppCompatActivity {
     private SwitchCompat swRecordatorios;
     private SwitchCompat swSonido;
     private SwitchCompat swVibracion;
+    private SwitchCompat swModoParental;
 
     private Button btnGuardar;
     private Button btnRestaurar;
-
-    // Valor temporal para pruebas.
-    // Después debe reemplazarse por el ID del usuario autenticado.
-    private final int idUsuarioActual = 1;
+    private int idUsuarioActual;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ajustes);
+
+        // Obtener el ID del usuario autenticado
+        idUsuarioActual = SesionUsuario.obtenerId(this);
+
+        // Verificar que exista una sesión activa
+        if (idUsuarioActual == SesionUsuario.SIN_SESION) {
+
+            Intent intent = new Intent(this, LoginActivity.class);
+
+            intent.addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+            );
+
+            startActivity(intent);
+            finish();
+            return;
+        }
 
         dao = new PreferenciaUsuarioDao(this);
 
@@ -58,6 +79,7 @@ public class AjustesActivity extends AppCompatActivity {
         swRecordatorios = findViewById(R.id.swRecordatorios);
         swSonido = findViewById(R.id.swSonido);
         swVibracion = findViewById(R.id.swVibracion);
+        swModoParental = findViewById(R.id.swModoParental);
 
         btnGuardar = findViewById(R.id.btnGuardar);
         btnRestaurar = findViewById(R.id.btnRestaurar);
@@ -75,38 +97,29 @@ public class AjustesActivity extends AppCompatActivity {
 
     private void cargarPreferencias() {
 
-        Cursor cursor = dao.obtenerPreferencias(idUsuarioActual);
+        try (Cursor cursor = dao.obtenerPreferencias(idUsuarioActual)) {
 
-        try {
             if (cursor.moveToFirst()) {
 
-                boolean notificaciones =
-                        cursor.getInt(
-                                cursor.getColumnIndexOrThrow(
-                                        "Notificaciones"
-                                )
-                        ) == 1;
+                boolean notificaciones = cursor.getInt(
+                        cursor.getColumnIndexOrThrow("Notificaciones")
+                ) == 1;
 
-                boolean recordatorios =
-                        cursor.getInt(
-                                cursor.getColumnIndexOrThrow(
-                                        "Recordatorios"
-                                )
-                        ) == 1;
+                boolean recordatorios = cursor.getInt(
+                        cursor.getColumnIndexOrThrow("Recordatorios")
+                ) == 1;
 
-                boolean sonido =
-                        cursor.getInt(
-                                cursor.getColumnIndexOrThrow(
-                                        "Sonido"
-                                )
-                        ) == 1;
+                boolean sonido = cursor.getInt(
+                        cursor.getColumnIndexOrThrow("Sonido")
+                ) == 1;
 
-                boolean vibracion =
-                        cursor.getInt(
-                                cursor.getColumnIndexOrThrow(
-                                        "Vibracion"
-                                )
-                        ) == 1;
+                boolean vibracion = cursor.getInt(
+                        cursor.getColumnIndexOrThrow("Vibracion")
+                ) == 1;
+
+                boolean modoParental = cursor.getInt(
+                        cursor.getColumnIndexOrThrow("ModoParental")
+                ) == 1;
 
                 String tema = cursor.getString(
                         cursor.getColumnIndexOrThrow("Tema")
@@ -116,16 +129,14 @@ public class AjustesActivity extends AppCompatActivity {
                 swRecordatorios.setChecked(recordatorios);
                 swSonido.setChecked(sonido);
                 swVibracion.setChecked(vibracion);
+                swModoParental.setChecked(modoParental);
 
                 if ("OSCURO".equals(tema)) {
                     rbTemaOscuro.setChecked(true);
                 } else {
                     rbTemaClaro.setChecked(true);
                 }
-
             }
-        } finally {
-            cursor.close();
         }
     }
 
@@ -141,13 +152,11 @@ public class AjustesActivity extends AppCompatActivity {
 
     private void guardarPreferencias() {
 
-        String tema;
+        String tema = rbTemaOscuro.isChecked()
+                ? "OSCURO"
+                : "CLARO";
 
-        if (rbTemaOscuro.isChecked()) {
-            tema = "OSCURO";
-        } else {
-            tema = "CLARO";
-        }
+        boolean modoParental = swModoParental.isChecked();
 
         boolean guardado = dao.guardarPreferencias(
                 idUsuarioActual,
@@ -155,12 +164,11 @@ public class AjustesActivity extends AppCompatActivity {
                 swRecordatorios.isChecked(),
                 swSonido.isChecked(),
                 swVibracion.isChecked(),
-                tema
+                tema,
+                modoParental
         );
 
         if (guardado) {
-
-            aplicarTema(tema);
 
             Toast.makeText(
                     this,
@@ -169,6 +177,9 @@ public class AjustesActivity extends AppCompatActivity {
             ).show();
 
             setResult(RESULT_OK);
+
+            aplicarTema(tema);
+
             finish();
 
         } else {

@@ -8,7 +8,9 @@ import android.database.sqlite.SQLiteDatabase;
 import com.conexa.clarity.data.model.Tarea;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TareaDao {
     private final DatabaseHelper dbHelper;
@@ -155,4 +157,127 @@ public class TareaDao {
         }
         return cv;
     }
+
+    public int filtrarTareaPorPeriodo( int idUsuario, String fechaDesde, String fechaHasta){
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT COUNT(*) FROM Tareas " +
+                "WHERE idUsuario = ? " +
+                "AND Estado = 'COMPLETADA' " +
+                "AND IdTareaPadre IS NULL " +
+                "AND Fecha_finalizado >= ? " +
+                "AND Fecha_finalizado < ? ";
+
+        try(Cursor c = db.rawQuery(sql, new String[]{
+                String. valueOf(idUsuario),
+                fechaDesde,
+                fechaHasta
+        })){
+            return c.moveToFirst() ? c.getInt(0) : 0;
+        }
+    }
+
+    public List <Integer> contarTareasPorFecha(int idUsuario, String fechaDesde, String fechaHasta){
+        List<Integer> resultados = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT substr(Fecha_finalizado, 1, 10), COUNT(*) " +
+                "FROM Tareas " +
+                "WHERE idUsuario = ? " +
+                "AND Estado = 'COMPLETADA' " +
+                "AND IdTareaPadre IS NULL " +
+                "AND Fecha_finalizado >= ? " +
+                "AND Fecha_finalizado < ? " +
+                "GROUP BY substr(Fecha_finalizado, 1, 10) " +
+                "ORDER BY substr(Fecha_finalizado, 1, 10) ASC";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario),
+                fechaDesde,
+                fechaHasta
+        })) {
+            while (c.moveToNext()) {
+                resultados.add(c.getInt(1));
+            }
+        }
+
+        return resultados;
+
+    }
+    public Map<String, Integer> contarTareasPorHora(
+            int idUsuario, String fechaDesde, String fechaHasta) {
+
+        Map<String, Integer> resultados = new HashMap<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT substr(Fecha_finalizado, 12, 2), COUNT(*) " +
+                "FROM Tareas " +
+                "WHERE idUsuario = ? " +
+                "AND Estado = 'COMPLETADA' " +
+                "AND IdTareaPadre IS NULL " +
+                "AND Fecha_finalizado >= ? " +
+                "AND Fecha_finalizado < ? " +
+                "GROUP BY substr(Fecha_finalizado, 12, 2)";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario), fechaDesde, fechaHasta
+        })) {
+            while (c.moveToNext()) {
+                resultados.put(c.getString(0), c.getInt(1));
+            }
+        }
+
+        return resultados;
+    }
+    public Map<String, Integer> contarTareasPorFechas(
+            int idUsuario, String fechaDesde, String fechaHasta) {
+
+        Map<String, Integer> resultados = new HashMap<>();
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT substr(Fecha_finalizado, 1, 10), COUNT(*) " +
+                "FROM Tareas " +
+                "WHERE idUsuario = ? " +
+                "AND Estado = 'COMPLETADA' " +
+                "AND IdTareaPadre IS NULL " +
+                "AND Fecha_finalizado >= ? " +
+                "AND Fecha_finalizado < ? " +
+                "GROUP BY substr(Fecha_finalizado, 1, 10)";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario),
+                fechaDesde,
+                fechaHasta
+        })) {
+            while (c.moveToNext()) {
+                resultados.put(c.getString(0), c.getInt(1));
+            }
+        }
+
+        return resultados;
+    }
+    public List<String> obtenerFechasCompletadas(int idUsuario) {
+        List<String> fechas = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT DISTINCT substr(Fecha_finalizado, 1, 10) " +
+                "FROM Tareas " +
+                "WHERE idUsuario = ? " +
+                "AND Estado = 'COMPLETADA' " +
+                "AND IdTareaPadre IS NULL " +
+                "AND Fecha_finalizado IS NOT NULL " +
+                "ORDER BY substr(Fecha_finalizado, 1, 10) ASC";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario)
+        })) {
+            while (c.moveToNext()) {
+                fechas.add(c.getString(0));
+            }
+        }
+
+        return fechas;
+    }
+
 }

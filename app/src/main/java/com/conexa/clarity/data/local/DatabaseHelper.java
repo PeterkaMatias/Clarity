@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "clarity.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     private static DatabaseHelper instance;
 
@@ -45,23 +45,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "Nivel INTEGER NOT NULL DEFAULT 1" +
                 ");");
 
+        // Perfil del (menor administrado desde el modo parental)
+        db.execSQL("CREATE TABLE PerfilMenor (" +
+                "IdPerfilMenor INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "IdUsuario INTEGER NOT NULL, " +
+                "Nombre TEXT NOT NULL, " +
+                "Edad INTEGER, " +
+                "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE" +
+                ");");
+
         // Tareas (versión completa de Rodrigo con Estado, Prioridad, Fechas y micro-pasos)
+
+// Tareas (versión completa de Rodrigo con Estado, Prioridad, Fechas y micro-pasos)
         db.execSQL("CREATE TABLE Tareas(" +
-                "idTarea INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "idUsuario INTEGER NOT NULL," +
+                "idTarea INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "idUsuario INTEGER NOT NULL, " +
+                "IdPerfilMenor INTEGER, " +
                 "Titulo TEXT NOT NULL, " +
                 "Descripcion TEXT, " +
                 "Estado TEXT NOT NULL DEFAULT 'PENDIENTE' " +
-                " CHECK (Estado IN ('PENDIENTE','EN_PROGRESO','COMPLETADA')), " +
+                "CHECK (Estado IN ('PENDIENTE','EN_PROGRESO','COMPLETADA')), " +
                 "Prioridad TEXT NOT NULL DEFAULT 'MEDIA' " +
-                " CHECK (Prioridad IN ('ALTA','MEDIA','BAJA'))," +
-                "Fecha_creacion TEXT," +
+                "CHECK (Prioridad IN ('ALTA','MEDIA','BAJA')), " +
+                "Fecha_creacion TEXT, " +
                 "Fecha_finalizado TEXT, " +
                 "Fecha_vencimiento TEXT, " +
                 "IdTareaPadre INTEGER, " +
                 "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE, " +
-                "FOREIGN KEY (IdTareaPadre) REFERENCES Tareas(IdTarea) ON DELETE CASCADE" +
+                "FOREIGN KEY (IdTareaPadre) REFERENCES Tareas(IdTarea) ON DELETE CASCADE, " +
+                "FOREIGN KEY (IdPerfilMenor) REFERENCES PerfilMenor(IdPerfilMenor) ON DELETE CASCADE" +
                 ");");
+
         //Temporizador
         db.execSQL("CREATE TABLE Temporizador(" +
                 "IdTemporizador INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -141,6 +155,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "Recordatorios INTEGER NOT NULL DEFAULT 1, " +
                 "Sonido INTEGER NOT NULL DEFAULT 1, " +
                 "Vibracion INTEGER NOT NULL DEFAULT 1, " +
+                "ModoParental INTEGER NOT NULL DEFAULT 0 " +
+                "CHECK (ModoParental IN (0, 1)), " +
                 "Tema TEXT NOT NULL DEFAULT 'CLARO' " +
                 "CHECK (Tema IN ('CLARO', 'OSCURO')), " +
                 "FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario) ON DELETE CASCADE" +
@@ -182,11 +198,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS Recompensas");
         db.execSQL("DROP TABLE IF EXISTS Temporizador");
         db.execSQL("DROP TABLE IF EXISTS Favoritos");
-
-        // Estrategia segura: recrear todas las tablas
         db.execSQL("DROP TABLE IF EXISTS PreferenciaUsuario");
         db.execSQL("DROP TABLE IF EXISTS ConsultasChat");
+
+        // Estrategia segura: recrear todas las tablas
         db.execSQL("DROP TABLE IF EXISTS Tareas");
+        db.execSQL("DROP TABLE IF EXISTS PerfilMenor");
         db.execSQL("DROP TABLE IF EXISTS Logros");
         db.execSQL("DROP TABLE IF EXISTS Recursos");
         db.execSQL("DROP TABLE IF EXISTS Usuarios");

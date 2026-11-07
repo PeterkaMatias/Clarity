@@ -37,21 +37,46 @@ public class UsuarioDao {
         if (emailExiste(email)) return EMAIL_DUPLICADO;
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues v = new ContentValues();
-        v.put("Nombre", nombre.trim());
-        v.put("Apellido", apellido.trim());
-        v.put("Email", email.trim().toLowerCase(Locale.ROOT));
-        v.put("Password", password); // se guarda tal cual
-        v.put("TipoPerfil", tipoPerfil);
+        long idUsuario = ERROR;
 
         try {
-            return db.insertOrThrow("Usuarios", null, v);
+            db.beginTransaction();
+            ContentValues usuario = new ContentValues();
+
+            usuario.put("Nombre", nombre.trim());
+            usuario.put("Apellido", apellido.trim());
+            usuario.put("Email", email.trim().toLowerCase(Locale.ROOT));
+            usuario.put("Password", password);
+            usuario.put("TipoPerfil", tipoPerfil);
+
+            idUsuario = db.insertOrThrow("Usuarios", null, usuario);
+
+            boolean modoParental = Usuario.PERFIL_PARENTAL.equals(tipoPerfil);
+
+            // Crear preferencias del usuario
+            ContentValues preferencias = new ContentValues();
+
+            preferencias.put("IdUsuario", idUsuario);
+            preferencias.put("ModoParental", modoParental ? 1 : 0);
+
+            db.insertOrThrow("PreferenciaUsuario", null, preferencias);
+
+            db.setTransactionSuccessful();
+
         } catch (SQLiteConstraintException e) {
             return EMAIL_DUPLICADO;
+
         } catch (RuntimeException e) {
             return ERROR;
+
+        } finally {
+            if (db.inTransaction()) {
+                db.endTransaction();
+            }
         }
+        return idUsuario;
     }
+
 
     // Devuelve el usuario si correo y contraseña son correctos; si no, null
     public Usuario autenticar(String email, String password) {

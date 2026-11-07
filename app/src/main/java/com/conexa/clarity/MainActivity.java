@@ -11,15 +11,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.conexa.clarity.data.local.PreferenciaUsuarioDao;
 import com.conexa.clarity.data.local.TareaDao;
 import com.conexa.clarity.data.local.UsuarioDao;
 import com.conexa.clarity.data.model.Tarea;
 import com.conexa.clarity.data.model.Usuario;
+import com.conexa.clarity.ui.auth.LoginActivity;
+import com.conexa.clarity.ui.PerfilesMenoresActivity;
 import com.conexa.clarity.ui.TareasHomeAdapter;
 import com.conexa.clarity.ui.chat.ChatActivity;
 import com.conexa.clarity.ui.resources.RecursosActivity;
 import com.conexa.clarity.ui.settings.AjustesActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
+import com.conexa.clarity.util.SesionUsuario;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 
@@ -42,7 +46,16 @@ public class MainActivity extends AppCompatActivity {
     private TareaDao tareaDao;
     private UsuarioDao usuarioDao;
 
-    private final int idUsuarioActual = 1;
+    private int idUsuarioActual;
+
+    private PreferenciaUsuarioDao preferenciaDao;
+
+    private View panelParental;
+    private View panelGeneral;
+    private TextView tvMensajeMotivacional;
+
+    private boolean modoParentalActivo = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,35 +63,50 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        try {
+        // Obtener el ID del usuario que inició sesión
+        idUsuarioActual = SesionUsuario.obtenerId(this);
 
-            tareaDao = new TareaDao(this);
-            usuarioDao = new UsuarioDao(this);
+        // Verificar que exista una sesión activa
+        if (idUsuarioActual == SesionUsuario.SIN_SESION) {
 
-        } catch (Exception e) {
+            Intent intent = new Intent(this, LoginActivity.class);
 
-            e.printStackTrace();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+            startActivity(intent);
+            finish();
+            return;
         }
 
+        // Inicializar los DAO
+        preferenciaDao = new PreferenciaUsuarioDao(this);
+        tareaDao = new TareaDao(this);
+        usuarioDao = new UsuarioDao(this);
+
+        // Inicializar componentes y eventos
         inicializarVistas();
         configurarNavegacion();
         configurarEventos();
     }
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
-
+        cargarModoParental();
         cargarDatosUsuario();
-        cargarTareasDelDia();
+
+        // Mostrar las tareas personales solamente en modo general
+        if (!modoParentalActivo) {
+            cargarTareasDelDia();
+        }
 
         if (bottomNav != null) {
-
-            bottomNav.setSelectedItemId(
-                    R.id.nav_inicio
-            );
+            bottomNav.setSelectedItemId(R.id.nav_inicio);
         }
     }
+
 
     private void inicializarVistas() {
 
@@ -113,6 +141,12 @@ public class MainActivity extends AppCompatActivity {
         cardFocusRapido = findViewById(
                 R.id.cardFocusRapido
         );
+
+        panelParental = findViewById(R.id.panelParental);
+        panelGeneral = findViewById(R.id.panelGeneral);
+
+        tvMensajeMotivacional =
+                findViewById(R.id.tvMensajeMotivacional);
 
 
         if (bottomNav != null) {
@@ -271,6 +305,18 @@ public class MainActivity extends AppCompatActivity {
                     }
             );
         }
+        View btnAdministrarMenores = findViewById(R.id.btnAdministrarMenores);
+
+        if (btnAdministrarMenores != null) {
+            btnAdministrarMenores.setOnClickListener(v -> {
+                if (modoParentalActivo) {
+                    startActivity(new Intent(
+                            this,
+                            PerfilesMenoresActivity.class
+                    ));
+                }
+            });
+        }
     }
 
     private void cargarDatosUsuario() {
@@ -296,8 +342,9 @@ public class MainActivity extends AppCompatActivity {
                     if (tvNivelUsuario != null) {
 
                         tvNivelUsuario.setText(
-                                "Modo " +
-                                        usuario.getTipoPerfil()
+                                modoParentalActivo
+                                        ? "Modo Parental"
+                                        : "Modo General"
                         );
                     }
 
@@ -412,4 +459,28 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+
+    private void cargarModoParental() {
+
+        modoParentalActivo = preferenciaDao.estaModoParentalActivo(idUsuarioActual);
+
+        // Mostrar el panel correspondiente
+        panelGeneral.setVisibility(
+                modoParentalActivo ? View.GONE : View.VISIBLE
+        );
+
+        panelParental.setVisibility(
+                modoParentalActivo ? View.VISIBLE : View.GONE
+        );
+
+        // Actualizar el mensaje
+        tvMensajeMotivacional.setText(
+                modoParentalActivo
+                        ? "Organizá y acompañá las actividades del menor."
+                        : "Un paso a la vez, a tu propio ritmo."
+        );
+    }
+
 }
+
