@@ -57,6 +57,16 @@
                 </LinearLayout>
 
                 <ImageButton
+                    android:id="@+id/btnAbrirLogros"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Logros y progreso"
+                    android:src="@drawable/ic_logros"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <ImageButton
                     android:id="@+id/btnAbrirAjustes"
                     android:layout_width="48dp"
                     android:layout_height="48dp"

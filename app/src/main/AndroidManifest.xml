@@ -68,6 +68,11 @@
             android:name=".ui.settings.AjustesActivity"
             android:exported="false" />
 
+        <!-- Progreso y logros -->
+        <activity
+            android:name=".ui.logros.LogrosyProgreso"
+            android:exported="false" />
+
         <!-- Crear/editar tarea -->
         <activity
             android:name=".ui.tareas.FormularioTareaActivity"

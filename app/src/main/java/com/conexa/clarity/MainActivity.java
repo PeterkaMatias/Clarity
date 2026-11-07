@@ -17,6 +17,7 @@ import com.conexa.clarity.data.model.Tarea;
 import com.conexa.clarity.data.model.Usuario;
 import com.conexa.clarity.ui.TareasHomeAdapter;
 import com.conexa.clarity.ui.chat.ChatActivity;
+import com.conexa.clarity.ui.logros.LogrosyProgreso;
 import com.conexa.clarity.ui.resources.RecursosActivity;
 import com.conexa.clarity.ui.settings.AjustesActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
@@ -49,6 +50,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+        ImageButton btnAbrirLogros = findViewById(R.id.btnAbrirLogros);
+
+        btnAbrirLogros.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, LogrosyProgreso.class);
+            startActivity(intent);
+        });
 
         try {
 
