@@ -121,9 +121,7 @@ public class AjustesActivity extends AppCompatActivity {
                         cursor.getColumnIndexOrThrow("ModoParental")
                 ) == 1;
 
-                String tema = cursor.getString(
-                        cursor.getColumnIndexOrThrow("Tema")
-                );
+                String tema = cursor.getString(cursor.getColumnIndexOrThrow("Tema"));
 
                 swNotificaciones.setChecked(notificaciones);
                 swRecordatorios.setChecked(recordatorios);
@@ -152,9 +150,7 @@ public class AjustesActivity extends AppCompatActivity {
 
     private void guardarPreferencias() {
 
-        String tema = rbTemaOscuro.isChecked()
-                ? "OSCURO"
-                : "CLARO";
+        String tema = rbTemaOscuro.isChecked() ? "OSCURO" : "CLARO";
 
         boolean modoParental = swModoParental.isChecked();
 

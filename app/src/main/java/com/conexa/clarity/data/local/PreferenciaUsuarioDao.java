@@ -120,4 +120,27 @@ public class PreferenciaUsuarioDao {
 
         return resultado != -1;
     }
+
+
+    public String obtenerTema(int idUsuario) {
+
+        if (idUsuario <= 0) {
+            return "CLARO";
+        }
+
+        try (Cursor cursor = obtenerPreferencias(idUsuario)) {
+            if (cursor.moveToFirst()) {
+                int indiceTema = cursor.getColumnIndex("Tema");
+
+                if (indiceTema >= 0) {
+                    String tema = cursor.getString(indiceTema);
+
+                    if ("OSCURO".equals(tema)) {
+                        return "OSCURO";
+                    }
+                }
+            }
+        }
+        return "CLARO";
+    }
 }
