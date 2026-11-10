@@ -27,6 +27,7 @@ import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.conexa.clarity.util.SesionUsuario;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
+import com.conexa.clarity.ui.tareas.TareasActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -248,6 +249,14 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
 
+            } else if(itemId == R.id.nav_tareas) {
+
+                abrirPantalla(
+                        TareasActivity.class
+                );
+
+                return true;
+
             } else if (itemId == R.id.nav_recursos) {
 
                 abrirPantalla(
@@ -323,6 +332,11 @@ public class MainActivity extends AppCompatActivity {
                     ));
                 }
             });
+        }
+
+        View btnVerTodasTareas = findViewById(R.id.btnVerTodasTareas);
+        if (btnVerTodasTareas != null) {
+            btnVerTodasTareas.setOnClickListener(v -> abrirPantalla(TareasActivity.class));
         }
     }
 

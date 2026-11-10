@@ -140,6 +140,11 @@ public class TareasActivity extends AppCompatActivity
         super.onResume();
 
         cargarTareas();
+
+        // Marcar la pestaña tareas activa
+        if (bottomNavigation != null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_tareas);
+        }
     }
 
     private void configurarFiltros() {
@@ -409,6 +414,10 @@ public class TareasActivity extends AppCompatActivity
 
                     int itemId =
                             item.getItemId();
+
+                    if (itemId == R.id.nav_tareas){
+                        return true;
+                    }
 
                     if (itemId == R.id.nav_inicio) {
 

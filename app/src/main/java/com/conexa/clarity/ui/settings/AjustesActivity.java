@@ -36,6 +36,7 @@ public class AjustesActivity extends AppCompatActivity {
 
     private Button btnGuardar;
     private Button btnRestaurar;
+    private Button btnCerrarSesion;
     private int idUsuarioActual;
 
     @Override
@@ -83,6 +84,7 @@ public class AjustesActivity extends AppCompatActivity {
 
         btnGuardar = findViewById(R.id.btnGuardar);
         btnRestaurar = findViewById(R.id.btnRestaurar);
+        btnCerrarSesion = findViewById(R.id.btnCerrarSesion);
     }
 
     private void establecerValoresPredeterminados() {
@@ -146,6 +148,19 @@ public class AjustesActivity extends AppCompatActivity {
             establecerValoresPredeterminados();
             guardarPreferencias();
         });
+
+        btnCerrarSesion.setOnClickListener(v -> cerrarSesion());
+    }
+
+    private void cerrarSesion(){
+        // 1. Limpiar la sesion en el celular
+        SesionUsuario.cerrar(this);
+        Toast.makeText(this, "Sesion cerrada", Toast.LENGTH_SHORT).show();
+        // 2. Redirigir a LoginActivity y limpiar el historial de navegacion
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void guardarPreferencias() {

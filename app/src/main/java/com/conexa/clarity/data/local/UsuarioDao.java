@@ -26,7 +26,7 @@ public class UsuarioDao {
     public boolean emailExiste(String email) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         try (Cursor c = db.rawQuery("SELECT 1 FROM Usuarios WHERE Email = ? LIMIT 1",
-                new String[]{email.trim()})) {
+                new String[]{email.trim().toLowerCase(Locale.ROOT)})) {
             return c.moveToFirst();
         }
     }
@@ -84,7 +84,7 @@ public class UsuarioDao {
         try (Cursor c = db.rawQuery(
                 "SELECT IdUsuario, Nombre, Apellido, Email, Password, TipoPerfil " +
                         "FROM Usuarios WHERE Email = ?",
-                new String[]{email.trim()})) {
+                new String[]{email.trim().toLowerCase(Locale.ROOT)})) {
 
             if (!c.moveToFirst()) return null; // no existe ese correo
 

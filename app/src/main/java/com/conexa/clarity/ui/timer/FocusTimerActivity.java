@@ -25,6 +25,7 @@ import com.conexa.clarity.ui.tareas.TareasActivity;
 import com.conexa.clarity.util.SesionUsuario;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.conexa.clarity.ui.tareas.TareasActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import com.conexa.clarity.data.model.Temporizador;
-import com.conexa.clarity.ui.tareas.TareasActivity;
+
 
 
 public class FocusTimerActivity extends AppCompatActivity {
@@ -590,6 +591,11 @@ public class FocusTimerActivity extends AppCompatActivity {
 
             int itemId =
                     item.getItemId();
+
+            if (itemId == R.id.nav_tareas) {
+                abrirPantalla(TareasActivity.class);
+                return true;
+            }
 
             if (itemId == R.id.nav_enfoque) {
 

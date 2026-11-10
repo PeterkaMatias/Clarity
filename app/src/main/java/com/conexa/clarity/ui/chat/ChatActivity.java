@@ -30,6 +30,7 @@ import com.conexa.clarity.ui.resources.RecursosActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
+import com.conexa.clarity.ui.tareas.TareasActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -954,6 +955,11 @@ public class ChatActivity extends AppCompatActivity {
 
                     int itemId =
                             item.getItemId();
+
+                    if (itemId == R.id.nav_tareas){
+                        abrirPantalla(TareasActivity.class);
+                        return true;
+                    }
 
                     if (itemId ==
                             R.id.nav_chat) {

@@ -17,10 +17,13 @@ import com.conexa.clarity.data.local.RecursoDao;
 import com.conexa.clarity.data.model.Recurso;
 import com.conexa.clarity.ui.chat.ChatActivity;
 import com.conexa.clarity.ui.settings.AjustesActivity;
+import com.conexa.clarity.ui.tareas.TareasActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+
+
 
 import java.util.List;
 
@@ -149,6 +152,11 @@ public class RecursosActivity extends AppCompatActivity
         bottomNavigation.setOnItemSelectedListener(item -> {
 
             int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_tareas) {
+                abrirPantalla(TareasActivity.class);
+                return true;
+            }
 
             if (itemId == R.id.nav_recursos) {
 
