@@ -14,6 +14,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Clarity">
 
+        <!-- Historial Lumi -->
+        <activity
+            android:name=".ui.chat.HistorialChatActivity"
+            android:exported="false" />
+
         <!-- Gestor de tareas -->
         <activity
             android:name=".ui.tareas.TareasActivity"

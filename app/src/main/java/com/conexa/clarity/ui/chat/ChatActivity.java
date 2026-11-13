@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -22,15 +23,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.conexa.clarity.BuildConfig;
 import com.conexa.clarity.MainActivity;
 import com.conexa.clarity.R;
+import com.conexa.clarity.data.local.ConsultaChatDao;
+import com.conexa.clarity.data.model.ConsultaChat;
 import com.conexa.clarity.data.remote.ClaudeApi;
 import com.conexa.clarity.data.remote.ClaudeRequest;
 import com.conexa.clarity.data.remote.ClaudeResponse;
 import com.conexa.clarity.data.remote.RetrofitClient;
 import com.conexa.clarity.ui.resources.RecursosActivity;
+import com.conexa.clarity.ui.tareas.TareasActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
-import com.conexa.clarity.ui.tareas.TareasActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,18 +56,12 @@ public class ChatActivity extends AppCompatActivity {
     private List<Mensaje> listaMensajes;
 
     private ClaudeApi claudeApi;
+    private ConsultaChatDao consultaChatDao;
 
     private int idUsuario;
     private boolean consultaEnCurso = false;
 
-    /*
-     * Variables para animar:
-     *
-     * Lumi está pensando
-     * Lumi está pensando.
-     * Lumi está pensando..
-     * Lumi está pensando...
-     */
+    private String consultaPendiente;
 
     private final Handler handlerAnimacion =
             new Handler(Looper.getMainLooper());
@@ -111,21 +108,26 @@ public class ChatActivity extends AppCompatActivity {
 
         idUsuario = getIntent().getIntExtra(
                 "id_usuario",
-                -1
+                1
         );
 
         claudeApi = RetrofitClient
                 .getClient()
                 .create(ClaudeApi.class);
 
+        consultaChatDao =
+                new ConsultaChatDao(this);
+
         inicializarVistas();
         configurarAjusteTeclado();
         configurarRecyclerView();
         configurarBotonEnviar();
+        configurarBotonHistorial();
         configurarSugerenciasPredeterminadas();
         configurarNavegacion();
         mostrarMensajeInicial();
         generarSugerenciasConClaude();
+
     }
 
     private void inicializarVistas() {
@@ -153,7 +155,13 @@ public class ChatActivity extends AppCompatActivity {
         bottomNavigation = findViewById(
                 R.id.bottomNavigation
         );
-        bottomNavigation.setItemActiveIndicatorEnabled(true);
+
+        if (bottomNavigation != null) {
+
+            bottomNavigation.setItemActiveIndicatorEnabled(
+                    true
+            );
+        }
     }
 
     private void configurarAjusteTeclado() {
@@ -179,10 +187,12 @@ public class ChatActivity extends AppCompatActivity {
 
                     if (tecladoVisible) {
 
-                        bottomNavigation.setVisibility(
-                                View.GONE
-                        );
+                        if (bottomNavigation != null) {
 
+                            bottomNavigation.setVisibility(
+                                    View.GONE
+                            );
+                        }
 
                         view.setPadding(
                                 systemBars.left,
@@ -193,9 +203,12 @@ public class ChatActivity extends AppCompatActivity {
 
                     } else {
 
-                        bottomNavigation.setVisibility(
-                                View.VISIBLE
-                        );
+                        if (bottomNavigation != null) {
+
+                            bottomNavigation.setVisibility(
+                                    View.VISIBLE
+                            );
+                        }
 
                         view.setPadding(
                                 systemBars.left,
@@ -213,6 +226,7 @@ public class ChatActivity extends AppCompatActivity {
                 rootChat
         );
     }
+
     private void configurarRecyclerView() {
 
         listaMensajes =
@@ -268,8 +282,8 @@ public class ChatActivity extends AppCompatActivity {
         etMensaje.setOnEditorActionListener(
                 (textView, actionId, event) -> {
 
-                    if (actionId ==
-                            EditorInfo.IME_ACTION_SEND) {
+                    if (actionId
+                            == EditorInfo.IME_ACTION_SEND) {
 
                         enviarMensaje();
 
@@ -311,6 +325,9 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
+        consultaPendiente =
+                texto;
+
         Mensaje mensajeUsuario =
                 new Mensaje(
                         texto,
@@ -337,6 +354,8 @@ public class ChatActivity extends AppCompatActivity {
 
         if (apiKeyNoConfigurada()) {
 
+            consultaPendiente = null;
+
             agregarRespuestaLumi(
                     "No encontré la API key de Claude. " +
                             "Revisá CLAUDE_API_KEY en local.properties."
@@ -350,10 +369,6 @@ public class ChatActivity extends AppCompatActivity {
         cambiarEstadoFormulario(
                 false
         );
-
-        /*
-         * Guardamos la posición del mensaje temporal.
-         */
 
         posicionMensajePensando =
                 listaMensajes.size();
@@ -391,11 +406,6 @@ public class ChatActivity extends AppCompatActivity {
                             Response<ClaudeResponse> response
                     ) {
 
-                        /*
-                         * Primero detenemos la animación
-                         * y eliminamos la burbuja temporal.
-                         */
-
                         detenerAnimacionPensando();
                         eliminarMensajePensando();
 
@@ -412,6 +422,8 @@ public class ChatActivity extends AppCompatActivity {
                                             response
                                     );
 
+                            consultaPendiente = null;
+
                             agregarRespuestaLumi(
                                     "No pude conectarme correctamente con Claude.\n\n" +
                                             "Código HTTP: " +
@@ -427,6 +439,8 @@ public class ChatActivity extends AppCompatActivity {
 
                         if (respuestaClaude == null) {
 
+                            consultaPendiente = null;
+
                             agregarRespuestaLumi(
                                     "Claude respondió sin contenido."
                             );
@@ -438,10 +452,14 @@ public class ChatActivity extends AppCompatActivity {
                                 respuestaClaude.obtenerTexto();
 
                         if (textoRespuesta == null
-                                || textoRespuesta.trim().isEmpty()) {
+                                || textoRespuesta
+                                .trim()
+                                .isEmpty()) {
 
                             String motivo =
                                     respuestaClaude.getStopReason();
+
+                            consultaPendiente = null;
 
                             if ("max_tokens".equals(
                                     motivo
@@ -457,9 +475,11 @@ public class ChatActivity extends AppCompatActivity {
                                 agregarRespuestaLumi(
                                         "Claude respondió, pero no devolvió " +
                                                 "un mensaje de texto. Motivo: " +
-                                                (motivo != null
-                                                        ? motivo
-                                                        : "desconocido")
+                                                (
+                                                        motivo != null
+                                                                ? motivo
+                                                                : "desconocido"
+                                                )
                                 );
                             }
 
@@ -467,6 +487,10 @@ public class ChatActivity extends AppCompatActivity {
                         }
 
                         ConversationMemory.agregarMensajeLumi(
+                                textoRespuesta
+                        );
+
+                        guardarConsultaEnHistorial(
                                 textoRespuesta
                         );
 
@@ -490,11 +514,15 @@ public class ChatActivity extends AppCompatActivity {
                                 true
                         );
 
+                        consultaPendiente = null;
+
                         String mensajeError =
                                 throwable.getMessage();
 
                         if (mensajeError == null
-                                || mensajeError.trim().isEmpty()) {
+                                || mensajeError
+                                .trim()
+                                .isEmpty()) {
 
                             mensajeError =
                                     "Error de conexión desconocido";
@@ -509,14 +537,73 @@ public class ChatActivity extends AppCompatActivity {
         );
     }
 
-    /*
-     * ANIMACIÓN DE:
-     *
-     * Lumi está pensando
-     * Lumi está pensando.
-     * Lumi está pensando..
-     * Lumi está pensando...
-     */
+    private void guardarConsultaEnHistorial(
+            String respuesta
+    ) {
+
+        if (consultaChatDao == null
+                || consultaPendiente == null
+                || consultaPendiente
+                .trim()
+                .isEmpty()
+                || respuesta == null
+                || respuesta
+                .trim()
+                .isEmpty()) {
+
+            consultaPendiente = null;
+            return;
+        }
+
+        if (idUsuario <= 0) {
+
+            Log.e(
+                    "LUMI_HISTORIAL",
+                    "No se guardó la consulta porque el usuario no es válido"
+            );
+
+            consultaPendiente = null;
+            return;
+        }
+
+        try {
+
+            long resultado =
+                    consultaChatDao.guardarConsulta(
+                            idUsuario,
+                            consultaPendiente,
+                            respuesta
+                    );
+
+            if (resultado == -1L) {
+
+                Log.e(
+                        "LUMI_HISTORIAL",
+                        "No se pudo guardar la consulta"
+                );
+
+            } else {
+
+                Log.d(
+                        "LUMI_HISTORIAL",
+                        "Consulta guardada con ID: " +
+                                resultado
+                );
+            }
+
+        } catch (Exception exception) {
+
+            Log.e(
+                    "LUMI_HISTORIAL",
+                    "Error al guardar la consulta",
+                    exception
+            );
+
+        } finally {
+
+            consultaPendiente = null;
+        }
+    }
 
     private void iniciarAnimacionPensando(
             int posicion
@@ -609,10 +696,6 @@ public class ChatActivity extends AppCompatActivity {
         posicionMensajePensando = -1;
     }
 
-    /*
-     * SUGERENCIAS PREDETERMINADAS
-     */
-
     private void configurarSugerenciasPredeterminadas() {
 
         establecerSugerencia(
@@ -626,14 +709,9 @@ public class ChatActivity extends AppCompatActivity {
         );
     }
 
-    /*
-     * SUGERENCIAS GENERADAS POR CLAUDE
-     */
-
     private void generarSugerenciasConClaude() {
 
         if (apiKeyNoConfigurada()) {
-
             return;
         }
 
@@ -693,7 +771,9 @@ public class ChatActivity extends AppCompatActivity {
                                         .obtenerTexto();
 
                         if (texto == null
-                                || texto.trim().isEmpty()) {
+                                || texto
+                                .trim()
+                                .isEmpty()) {
 
                             return;
                         }
@@ -708,12 +788,6 @@ public class ChatActivity extends AppCompatActivity {
                             Call<ClaudeResponse> call,
                             Throwable throwable
                     ) {
-
-                        /*
-                         * No hacemos nada.
-                         * Si falla, quedan las sugerencias
-                         * predeterminadas.
-                         */
                     }
                 }
         );
@@ -749,13 +823,11 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             if (sugerencias.size() == 2) {
-
                 break;
             }
         }
 
         if (sugerencias.size() < 2) {
-
             return;
         }
 
@@ -796,7 +868,6 @@ public class ChatActivity extends AppCompatActivity {
     ) {
 
         if (texto == null) {
-
             return "";
         }
 
@@ -842,16 +913,16 @@ public class ChatActivity extends AppCompatActivity {
         return resultado;
     }
 
-    /*
-     * MÉTODOS AUXILIARES
-     */
-
     private boolean apiKeyNoConfigurada() {
 
-        return BuildConfig.CLAUDE_API_KEY.isEmpty()
-                || BuildConfig.CLAUDE_API_KEY.equals(
-                "API_KEY_NO_CONFIGURADA"
-        );
+        return BuildConfig.CLAUDE_API_KEY == null
+                || BuildConfig.CLAUDE_API_KEY
+                .trim()
+                .isEmpty()
+                || BuildConfig.CLAUDE_API_KEY
+                .equals(
+                        "API_KEY_NO_CONFIGURADA"
+                );
     }
 
     private void agregarRespuestaLumi(
@@ -876,7 +947,6 @@ public class ChatActivity extends AppCompatActivity {
     ) {
 
         if (response.errorBody() == null) {
-
             return "";
         }
 
@@ -904,6 +974,40 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void configurarBotonHistorial() {
+
+        View botonHistorial =
+                findViewById(
+                        R.id.btnMenuChat
+                );
+
+        if (botonHistorial == null) {
+            return;
+        }
+
+        botonHistorial.setOnClickListener(
+                view -> {
+
+                    Intent intent =
+                            new Intent(
+                                    ChatActivity.this,
+                                    HistorialChatActivity.class
+                            );
+
+                    intent.putExtra(
+                            "id_usuario",
+                            idUsuario
+                    );
+
+                    startActivity(intent);
+
+                    overridePendingTransition(
+                            R.anim.fade_in,
+                            R.anim.fade_out
+                    );
+                }
+        );
+    }
     private void cambiarEstadoFormulario(
             boolean habilitado
     ) {
@@ -940,11 +1044,11 @@ public class ChatActivity extends AppCompatActivity {
         mostrarTeclado();
     }
 
-    /*
-     * NAVEGACIÓN INFERIOR
-     */
-
     private void configurarNavegacion() {
+
+        if (bottomNavigation == null) {
+            return;
+        }
 
         bottomNavigation.setSelectedItemId(
                 R.id.nav_chat
@@ -956,19 +1060,24 @@ public class ChatActivity extends AppCompatActivity {
                     int itemId =
                             item.getItemId();
 
-                    if (itemId == R.id.nav_tareas){
-                        abrirPantalla(TareasActivity.class);
+                    if (itemId
+                            == R.id.nav_tareas) {
+
+                        abrirPantalla(
+                                TareasActivity.class
+                        );
+
                         return true;
                     }
 
-                    if (itemId ==
-                            R.id.nav_chat) {
+                    if (itemId
+                            == R.id.nav_chat) {
 
                         return true;
                     }
 
-                    if (itemId ==
-                            R.id.nav_inicio) {
+                    if (itemId
+                            == R.id.nav_inicio) {
 
                         abrirPantalla(
                                 MainActivity.class
@@ -977,8 +1086,8 @@ public class ChatActivity extends AppCompatActivity {
                         return true;
                     }
 
-                    if (itemId ==
-                            R.id.nav_enfoque) {
+                    if (itemId
+                            == R.id.nav_enfoque) {
 
                         abrirPantalla(
                                 FocusTimerActivity.class
@@ -987,8 +1096,8 @@ public class ChatActivity extends AppCompatActivity {
                         return true;
                     }
 
-                    if (itemId ==
-                            R.id.nav_recursos) {
+                    if (itemId
+                            == R.id.nav_recursos) {
 
                         abrirPantalla(
                                 RecursosActivity.class
@@ -1012,10 +1121,11 @@ public class ChatActivity extends AppCompatActivity {
             Class<?> pantallaDestino
     ) {
 
-        Intent intent = new Intent(
-                this,
-                pantallaDestino
-        );
+        Intent intent =
+                new Intent(
+                        this,
+                        pantallaDestino
+                );
 
         intent.putExtra(
                 "id_usuario",
@@ -1031,10 +1141,6 @@ public class ChatActivity extends AppCompatActivity {
 
         finish();
     }
-
-    /*
-     * SCROLL Y TECLADO
-     */
 
     private void desplazarAlUltimoMensaje() {
 
@@ -1092,6 +1198,8 @@ public class ChatActivity extends AppCompatActivity {
     protected void onDestroy() {
 
         detenerAnimacionPensando();
+
+        consultaPendiente = null;
 
         super.onDestroy();
     }
