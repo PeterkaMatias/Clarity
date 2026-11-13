@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -53,6 +54,15 @@
             android:text="Cuerpo del artículo explicativo..."
             android:textColor="@color/gris_texto"
             android:textSize="16sp" />
+        
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMarcarLeido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Marcar como leído"
+            android:textColor="@android:color/white"
+            app:backgroundTint="@color/verde_principal" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

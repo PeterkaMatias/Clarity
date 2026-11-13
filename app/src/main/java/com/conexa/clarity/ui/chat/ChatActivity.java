@@ -24,6 +24,7 @@ import com.conexa.clarity.BuildConfig;
 import com.conexa.clarity.MainActivity;
 import com.conexa.clarity.R;
 import com.conexa.clarity.data.local.ConsultaChatDao;
+import com.conexa.clarity.data.local.LogrosDao;
 import com.conexa.clarity.data.model.ConsultaChat;
 import com.conexa.clarity.data.remote.ClaudeApi;
 import com.conexa.clarity.data.remote.ClaudeRequest;
@@ -38,6 +39,9 @@ import com.google.android.material.chip.Chip;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -57,6 +61,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private ClaudeApi claudeApi;
     private ConsultaChatDao consultaChatDao;
+    private LogrosDao logrosDao;
 
     private int idUsuario;
     private boolean consultaEnCurso = false;
@@ -117,6 +122,8 @@ public class ChatActivity extends AppCompatActivity {
 
         consultaChatDao =
                 new ConsultaChatDao(this);
+
+        logrosDao = new LogrosDao(this);
 
         inicializarVistas();
         configurarAjusteTeclado();
@@ -489,6 +496,20 @@ public class ChatActivity extends AppCompatActivity {
                         ConversationMemory.agregarMensajeLumi(
                                 textoRespuesta
                         );
+
+                        // LOGRO 8: Amigo de Lumi
+                        String fechaLogro = new SimpleDateFormat(
+                                "yyyy-MM-dd HH:mm:ss",
+                                Locale.getDefault()
+                        ).format(new Date());
+
+                        if (idUsuario > 0) {
+                            logrosDao.desbloquear(
+                                    idUsuario,
+                                    8,
+                                    fechaLogro
+                            );
+                        }
 
                         guardarConsultaEnHistorial(
                                 textoRespuesta

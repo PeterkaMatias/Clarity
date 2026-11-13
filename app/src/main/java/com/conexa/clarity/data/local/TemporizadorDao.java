@@ -14,8 +14,10 @@ import java.util.Map;
 
 public class TemporizadorDao {
     private final DatabaseHelper dbHelper;
+    private final LogrosDao logrosDao;
     public TemporizadorDao(Context context){
         this.dbHelper = DatabaseHelper.getInstance(context);
+        this.logrosDao = new LogrosDao(context);
     }
     public long agregar(Temporizador temporizador){
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -176,5 +178,58 @@ public class TemporizadorDao {
         }
 
         return resultados;
+    }
+    //LOGROS 5 Y 6
+    public void verificarArranqueRapido(int idUsuario, String fecha) {
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT COUNT(*) FROM Temporizador " +
+                "WHERE IdUsuario = ? " +
+                "AND Duracion = 5 " +
+                "AND Estado = 'Completado'";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario)
+        })) {
+            if (c.moveToFirst() && c.getInt(0) > 0) {
+                logrosDao.desbloquear(idUsuario, 5, fecha);
+            }
+        }
+    }
+
+    public void verificarEnLaZona(int idUsuario, String fecha) {
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT COUNT(*) FROM Temporizador " +
+                "WHERE IdUsuario = ? " +
+                "AND Duracion = 25 " +
+                "AND Estado = 'Completado'";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario)
+        })) {
+            if (c.moveToFirst() && c.getInt(0) > 0) {
+                logrosDao.desbloquear(idUsuario, 6, fecha);
+            }
+        }
+    }
+    // LOGRO 7
+    public void verificarHoraDorada(int idUsuario, String fecha) {
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT COALESCE(SUM(Duracion), 0) FROM Temporizador " +
+                "WHERE IdUsuario = ? " +
+                "AND Estado = 'Completado'";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario)
+        })) {
+            if (c.moveToFirst() && c.getInt(0) >= 60) {
+                logrosDao.desbloquear(idUsuario, 7, fecha);
+            }
+        }
     }
 }

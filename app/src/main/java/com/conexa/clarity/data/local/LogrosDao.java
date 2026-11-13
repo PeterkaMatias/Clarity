@@ -76,4 +76,36 @@ public class LogrosDao {
 
         return lista;
     }
+    public List<Integer> obtenerLogrosDesbloqueados(int idUsuario) {
+        List<Integer> lista = new ArrayList<>();
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT IdLogro FROM UsuarioLogros WHERE IdUsuario = ?";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{String.valueOf(idUsuario)})) {
+            while (c.moveToNext()) {
+                lista.add(c.getInt(0));
+            }
+        }
+
+        return lista;
+    }
+    public boolean desbloquear(int idUsuario, int idLogro, String fecha) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put("IdUsuario", idUsuario);
+        cv.put("IdLogro", idLogro);
+        cv.put("Fecha_obtenido", fecha);
+
+        long resultado = db.insertWithOnConflict(
+                "UsuarioLogros",
+                null,
+                cv,
+                SQLiteDatabase.CONFLICT_IGNORE
+        );
+
+        return resultado != -1;
+    }
 }

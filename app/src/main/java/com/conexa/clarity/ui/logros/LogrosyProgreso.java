@@ -13,14 +13,19 @@ import androidx.core.content.ContextCompat;
 
 import com.conexa.clarity.MainActivity;
 import com.conexa.clarity.R;
+import com.conexa.clarity.data.local.LogrosDao;
+import com.conexa.clarity.data.local.RecompensasDao;
 import com.conexa.clarity.data.local.TareaDao;
 import com.conexa.clarity.data.local.TemporizadorDao;
 import com.conexa.clarity.ui.chat.ChatActivity;
 import com.conexa.clarity.ui.resources.RecursosActivity;
+import com.conexa.clarity.ui.tareas.TareasActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.conexa.clarity.util.SesionUsuario;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -43,6 +48,7 @@ public class LogrosyProgreso extends AppCompatActivity {
     private TextView tvMinutosRealizados;
     private TareaDao tareaDao;
     private TemporizadorDao temporizadorDao;
+    private LogrosDao logrosDao;
     private int idUsuarioActual;
     private LinearLayout contenedorGrafico;
     private TextView tvSubtituloActividad;
@@ -50,6 +56,16 @@ public class LogrosyProgreso extends AppCompatActivity {
     private TextView tvComparacionTareas;
     private TextView tvComparacionMinutos;
     private TextView tvComparacionRacha;
+    private RecompensasDao recompensasDao;
+    private CircularProgressIndicator progresoNivelCircular;
+    private LinearProgressIndicator barraProgresoPuntos;
+    private TextView tvNivelActual;
+    private TextView tvTituloNivel;
+    private TextView tvDescripcionNivel;
+    private TextView tvPuntosActuales;
+    private TextView tvPuntosObjetivos;
+    private TextView tvPuntosRestantes;
+
 
 
     @Override
@@ -74,7 +90,22 @@ public class LogrosyProgreso extends AppCompatActivity {
         tvComparacionRacha = findViewById(R.id.tvComparacionRacha);
 
         tareaDao = new TareaDao(this);
+        recompensasDao = new RecompensasDao(this);
         temporizadorDao = new TemporizadorDao(this);
+        logrosDao = new LogrosDao(this);
+        actualizarInsignias();
+
+        progresoNivelCircular = findViewById(R.id.progresoNivelCircular);
+        barraProgresoPuntos = findViewById(R.id.barraProgresoPuntos);
+
+        tvNivelActual = findViewById(R.id.tvNivelActual);
+        tvTituloNivel = findViewById(R.id.tvTituloNivel);
+        tvDescripcionNivel = findViewById(R.id.tvDescripcionNivel);
+        tvPuntosActuales = findViewById(R.id.tvPuntosActuales);
+        tvPuntosObjetivos = findViewById(R.id.tvPuntosObjetivo);
+        tvPuntosRestantes = findViewById(R.id.tvPuntosRestantes);
+
+        actualizarNivelYProgreso();
 
         botonDia.setOnClickListener(v -> seleccionarPeriodo(botonDia,"DIA"));
         botonSemana.setOnClickListener(v -> seleccionarPeriodo(botonSemana,"SEMANA"));
@@ -611,6 +642,11 @@ public class LogrosyProgreso extends AppCompatActivity {
                 return true;
             }
 
+            if (itemId == R.id.nav_tareas) {
+                abrirPantalla(TareasActivity.class);
+                return true;
+            }
+
             if (itemId == R.id.nav_chat) {
                 abrirPantalla(ChatActivity.class);
                 return true;
@@ -636,6 +672,120 @@ public class LogrosyProgreso extends AppCompatActivity {
         );
 
         finish();
+    }
+    private void actualizarNivelYProgreso() {
+
+        int puntos = recompensasDao.obtenerPuntosTotales(idUsuarioActual);
+
+        int nivel;
+        int puntosBase;
+        int puntosObjetivo;
+        String nombre;
+        String descripcion;
+
+        if (puntos >= 1000) {
+            nivel = 5;
+            puntosBase = 1000;
+            puntosObjetivo = 1000;
+            nombre = "Clarity Pro";
+            descripcion = "¡Alcanzaste el nivel máximo!";
+        } else if (puntos >= 601) {
+            nivel = 4;
+            puntosBase = 600;
+            puntosObjetivo = 1000;
+            nombre = "Maestro del Foco";
+            descripcion = "Estás dominando tu concentración.";
+        } else if (puntos >= 301) {
+            nivel = 3;
+            puntosBase = 300;
+            puntosObjetivo = 600;
+            nombre = "Estratega";
+            descripcion = "Cada paso te acerca a tus objetivos.";
+        } else if (puntos >= 101) {
+            nivel = 2;
+            puntosBase = 100;
+            puntosObjetivo = 300;
+            nombre = "Enfocado";
+            descripcion = "Estás construyendo buenos hábitos.";
+        } else {
+            nivel = 1;
+            puntosBase = 0;
+            puntosObjetivo = 100;
+            nombre = "Explorador";
+            descripcion = "Todo gran cambio comienza con un paso.";
+        }
+
+        tvNivelActual.setText(String.valueOf(nivel));
+        tvTituloNivel.setText(nombre);
+        tvDescripcionNivel.setText(descripcion);
+
+        if (nivel == 5) {
+            tvPuntosActuales.setText(puntos + " puntos");
+            tvPuntosObjetivos.setText("Nivel máximo");
+            tvPuntosRestantes.setText("¡Completaste todos los niveles!");
+
+            progresoNivelCircular.setProgress(100);
+            barraProgresoPuntos.setProgress(100);
+
+        } else {
+
+            int puntosDelNivel = puntos - puntosBase;
+            int puntosNecesarios = puntosObjetivo - puntosBase;
+            int puntosRestantes = puntosObjetivo - puntos;
+
+            int porcentaje = (int) (
+                    (puntosDelNivel * 100.0) / puntosNecesarios
+            );
+
+            tvPuntosActuales.setText(puntosDelNivel + " puntos");
+            tvPuntosObjetivos.setText("de " + puntosNecesarios + " puntos");
+            tvPuntosRestantes.setText(
+                    "Te faltan " + puntosRestantes + " puntos para el siguiente nivel"
+            );
+
+            progresoNivelCircular.setProgress(porcentaje);
+            barraProgresoPuntos.setProgress(porcentaje);
+        }
+
+
+    }
+    private void actualizarInsignias() {
+
+        List<Integer> logrosDesbloqueados =
+                logrosDao.obtenerLogrosDesbloqueados(idUsuarioActual);
+
+        int[] tarjetas = {
+                R.id.cardInsignia,
+                R.id.cardInsignia2,
+                R.id.cardInsignia3,
+                R.id.cardInsignia4,
+                R.id.cardInsignia5,
+                R.id.cardInsignia6,
+                R.id.cardInsignia7,
+                R.id.cardInsignia8,
+                R.id.cardInsignia9,
+                R.id.cardInsignia10
+        };
+
+        for (int i = 0; i < tarjetas.length; i++) {
+
+            View tarjeta = findViewById(tarjetas[i]);
+
+            boolean desbloqueado = logrosDesbloqueados.contains(i + 1);
+
+            tarjeta.setAlpha(desbloqueado ? 1f : 0.45f);
+        }
+    }
+    protected void onResume() {
+        super.onResume();
+
+        if (recompensasDao != null) {
+            actualizarNivelYProgreso();
+
+            if (logrosDao != null) {
+                actualizarInsignias();
+            }
+        }
     }
 
 }

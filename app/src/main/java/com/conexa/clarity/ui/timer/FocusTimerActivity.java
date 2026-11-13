@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.conexa.clarity.MainActivity;
 import com.conexa.clarity.R;
+import com.conexa.clarity.data.local.RecompensasDao;
 import com.conexa.clarity.data.local.TareaDao;
 import com.conexa.clarity.data.local.TemporizadorDao;
 import com.conexa.clarity.data.model.Tarea;
@@ -40,6 +41,8 @@ public class FocusTimerActivity extends AppCompatActivity {
 
 
     private boolean estaCorriendo = false;
+    private boolean temporizadorPausado = false;
+
 
     private long tiempoSeleccionado =
             5 * 60 * 1000L;
@@ -57,6 +60,7 @@ public class FocusTimerActivity extends AppCompatActivity {
     private CountDownTimer temporizador;
 
     private TareaDao tareaDao;
+    private RecompensasDao recompensasDao;
     private TemporizadorDao temporizadorDao;
     private List<Tarea> tareasPendientes;
     private Tarea tareaSeleccionada;
@@ -83,6 +87,7 @@ public class FocusTimerActivity extends AppCompatActivity {
 
         tareaDao = new TareaDao(this);
         temporizadorDao = new TemporizadorDao(this);
+        recompensasDao = new RecompensasDao(this);
 
         inicializarVistas();
         configurarNavegacion();
@@ -339,21 +344,61 @@ public class FocusTimerActivity extends AppCompatActivity {
                     "Sesion guardada correctamente",
                     Toast.LENGTH_SHORT
             ).show();
-            if (tareaSeleccionada != null) {
 
-                tareaDao.cambiarEstado(
-                        tareaSeleccionada.getIdTarea(),
-                        Tarea.ESTADO_COMPLETADA,
-                        new SimpleDateFormat(
-                                "yyyy-MM-dd HH:mm",
-                                Locale.getDefault()
-                        ).format(new Date())
+            int puntos = 0;
+            int minutos = (int)(tiempoSeleccionado / 60000);
+
+            if(minutos == 5){
+                puntos = 10;
+            }
+            else if(minutos== 15){
+                puntos = 25;
+            }else if(minutos == 25){
+                puntos = 50;
+            }
+            recompensasDao.otorgarPuntos(
+                    idUsuarioActual,
+                    tareaSeleccionada != null ? tareaSeleccionada.getId() : null,
+                    puntos,
+                    "TEMPORIZADOR_COMPLETADO",
+                    "Completar sesion de concentracion de " + minutos + " minutos",
+                    "TEMPORIZADOR_" + resultado,
+                    new SimpleDateFormat(
+                            "yyyy-MM-dd HH:mm:ss",
+                            Locale.getDefault()
+                    ).format(new Date())
+            );
+            String fechaLogro = new SimpleDateFormat(
+                    "yyyy-MM-dd HH:mm:ss",
+                    Locale.getDefault()
+            ).format(new Date());
+
+            // LOGRO 5
+            if (tiempoSeleccionado == 5 * 60 * 1000L) {
+                temporizadorDao.verificarArranqueRapido(
+                        idUsuarioActual,
+                        fechaLogro
                 );
             }
+
+            // LOGRO 6
+            if (tiempoSeleccionado == 25 * 60 * 1000L && !temporizadorPausado) {
+                temporizadorDao.verificarEnLaZona(
+                        idUsuarioActual,
+                        fechaLogro
+                );
+            }
+            // LOGRO 7
+            temporizadorDao.verificarHoraDorada(
+                    idUsuarioActual,
+                    fechaLogro
+            );
         }
         fechaInicioSesion = null;
     }
     private void pausarTemporizador() {
+
+        temporizadorPausado = true;
 
         if (temporizador != null) {
 
@@ -381,6 +426,8 @@ public class FocusTimerActivity extends AppCompatActivity {
     }
 
     private void reiniciarTemporizador() {
+
+        temporizadorPausado = false;
 
         if (temporizador != null) {
 

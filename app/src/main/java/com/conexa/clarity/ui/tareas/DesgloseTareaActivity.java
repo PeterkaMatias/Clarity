@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.conexa.clarity.R;
+import com.conexa.clarity.data.local.RecompensasDao;
 import com.conexa.clarity.data.local.TareaDao;
 import com.conexa.clarity.data.model.Tarea;
 import com.google.android.material.chip.ChipGroup;
@@ -34,6 +35,7 @@ public class DesgloseTareaActivity extends AppCompatActivity {
 
     private MicroPasosPreliminarAdapter adapter;
     private TareaDao tareaDao;
+    private RecompensasDao recompensasDao;
 
     private int idTareaPadre = 0;
     private String tituloTareaPadre = "";
@@ -45,6 +47,7 @@ public class DesgloseTareaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_desglose_tarea);
 
         tareaDao = new TareaDao(this);
+        recompensasDao = new RecompensasDao(this);
 
         // Obtener datos de la tarea recibida
         idTareaPadre = getIntent().getIntExtra("id_tarea_padre", 0);
@@ -108,17 +111,17 @@ public class DesgloseTareaActivity extends AppCompatActivity {
     }
 
     private List<String> generarMicroPasosSugeridos(String titulo, int cantidad) {
-List<String> lista = new ArrayList<>();
-lista.add("Paso 1: Reunir materiales y despejar el espacio para " + titulo);
-lista.add("Paso 2: Definir el primer objetivo concreto en 10 minutos");
-lista.add("Paso 3: Realizar el avance principal de  la tarea");
+        List<String> lista = new ArrayList<>();
+        lista.add("Paso 1: Reunir materiales y despejar el espacio para " + titulo);
+        lista.add("Paso 2: Definir el primer objetivo concreto en 10 minutos");
+        lista.add("Paso 3: Realizar el avance principal de  la tarea");
 
-if(cantidad >= 5) {
-    lista.add("Paso 4: Revisar detalles y chequear que no falta nada");
-    lista.add("Paso 5: Guardar, ordenar y marcar como completada");
+        if(cantidad >= 5) {
+            lista.add("Paso 4: Revisar detalles y chequear que no falta nada");
+            lista.add("Paso 5: Guardar, ordenar y marcar como completada");
 
-}
-return lista;
+        }
+        return lista;
 
     }
 
@@ -148,6 +151,17 @@ return lista;
                 long id = tareaDao.insertar(microPaso);
                 if(id > 0) guardados++;
             }
+        }
+        if (guardados > 0){
+            recompensasDao.otorgarPuntos(
+                    idUsuarioActual,
+                    idTareaPadre,
+                    10,
+                    "DESGLOSE_IA",
+                    "Descripcion de tarea con IA",
+                    "DESGLOSE_" + idTareaPadre,
+                    fechaCreacion
+            );
         }
         Toast.makeText(this, "Se guardaron " + guardados + " micro-pasos.", Toast.LENGTH_SHORT).show();
         finish();

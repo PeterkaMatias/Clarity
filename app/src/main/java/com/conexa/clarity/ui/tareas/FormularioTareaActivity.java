@@ -209,6 +209,12 @@ public class FormularioTareaActivity extends AppCompatActivity {
                     0 // Tarea principal (sin padre)
             );
             long id = tareaDao.insertar(nueva);
+
+            //Logro 2
+            if (id != -1) {
+                tareaDao.verificarMenteDespejada(idUsuarioActual, fechaCreacion);
+            }
+
             if (id > 0){
                 Toast.makeText(this, "¡Tarea guardada con exito!", Toast.LENGTH_SHORT).show();
                 return id;
