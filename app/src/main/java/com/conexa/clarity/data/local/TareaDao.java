@@ -168,6 +168,27 @@ public class TareaDao {
                 // LOGRO 4
                 verificarSinPostergar(idUsuario, idTarea, fecha);
             }
+
+        }
+
+        if(filas > 0 && !esMicroPaso) {
+            if (Tarea.ESTADO_COMPLETADA.equals(nuevoEstado)) {
+                // al completar la tarea padre, compeltamos en cascada sus micro-pasos
+                List<Tarea> subList = obtenerSubtareas(idTarea);
+                for (Tarea sub : subList){
+                    if (!Tarea.ESTADO_COMPLETADA.equals(sub.getEstado())){
+                        cambiarEstado(sub.getIdTarea(), Tarea.ESTADO_COMPLETADA, fechaFinalizado);
+
+                    }
+                }
+
+            } else if (Tarea.ESTADO_PENDIENTE.equals(nuevoEstado)){
+                //al desmarcar la tarea padre, volvemos sus micro-pasos a PENDIENTES
+                ContentValues cvSub = new ContentValues();
+                cvSub.put("Estado", Tarea.ESTADO_PENDIENTE);
+                cvSub.putNull("Fecha_finalizado");
+                db.update("Tareas", cvSub, "IdTareaPadre = ?", new String[]{ String.valueOf(idTarea)});
+            }
         }
         return filas > 0;
     }
