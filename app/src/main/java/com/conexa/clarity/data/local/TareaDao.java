@@ -213,6 +213,47 @@ public class TareaDao {
         );
     }
 
+    /** Devuelve tareas y micro-pasos pendientes para el temporizador de concentracion*/
+public List<Tarea> obtenerTareasParaTemporizador(int idUsuario) {
+    List<Tarea> lista = new ArrayList<>();
+    List<Tarea> principales = obtenerPrincipales(idUsuario);
+
+    for(Tarea padre : principales){
+        List<Tarea> subtareas = obtenerSubtareas(padre.getIdTarea());
+        if (subtareas.isEmpty()) {
+            // Tarea sin micro-pasos
+            if (!padre.esCompletada()){
+                lista.add(padre);
+            }
+        } else {
+            //Micro-pasos pendientes de esta tarea
+            for (Tarea sub: subtareas){
+                if (!sub.esCompletada()) {
+                    Tarea tSub = new Tarea();
+                    tSub.setIdTarea(sub.getIdTarea());
+                    tSub.setIdUsuario(sub.getIdUsuario());
+                    tSub.setIdTareaPadre(sub.getIdTareaPadre());
+                    tSub.setTitulo(padre.getTitulo() + " ➔ " + sub.getTitulo());
+                    tSub.setDescripcion(sub.getDescripcion());
+                    tSub.setEstado(sub.getEstado());
+                    tSub.setPrioridad(sub.getPrioridad());
+                    lista.add(tSub);
+                }
+            }
+            // Si la tarea padre aun no se completo, tambien la agregamos como opcion general
+            if (!padre.esCompletada()) {
+                Tarea tPadre = new Tarea();
+                tPadre.setIdTarea(padre.getIdTarea());
+                tPadre.setIdUsuario(padre.getIdUsuario());
+                tPadre.setTitulo("📁 " + padre.getTitulo()  + "(General)");
+                tPadre.setDescripcion(padre.getDescripcion());
+                tPadre.setEstado(padre.getEstado());
+                lista.add(tPadre);
+            }
+        }
+    }
+    return lista;
+}
     /** Usado por MainActivity: marca una tarea como completada o pendiente */
     public boolean actualizarCompletada(int idTarea, boolean completada) {
         String fecha = completada

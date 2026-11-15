@@ -50,7 +50,7 @@ public class RecursosAdapter extends RecyclerView.Adapter<RecursosAdapter.ViewHo
         holder.tvTiempoLectura.setText("⏱ Lectura de " + item.getTiempoLecturaMin() + " min");
 
         holder.btnFavorito.setImageResource(item.isEsFavorito() ?
-                android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off);
+                R.drawable.ic_estrella_llena : R.drawable.ic_estrella_vacia);
 
         holder.itemView.setOnClickListener(v -> listener.onRecursoClick(item));
         holder.btnFavorito.setOnClickListener(v -> listener.onFavoritoClick(item, position));

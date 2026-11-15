@@ -39,9 +39,8 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Marcar como favorito"
-                android:src="@android:drawable/btn_star"
-                app:tint="@color/verde_principal" />
+                android:contentDescription="Marcar como favorito" />
+
         </LinearLayout>
 
         <TextView

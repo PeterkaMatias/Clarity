@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.widget.Toast;
 
 import com.conexa.clarity.data.model.Logros;
 
@@ -12,9 +13,12 @@ import java.util.List;
 
 public class LogrosDao {
     private final DatabaseHelper dbHelper;
+    private final Context context;
     public LogrosDao(Context context){
+        this.context = context;
         this.dbHelper = DatabaseHelper.getInstance(context);
     }
+
 
     public long agregar(Logros logro) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -105,7 +109,18 @@ public class LogrosDao {
                 cv,
                 SQLiteDatabase.CONFLICT_IGNORE
         );
+        boolean nuevoDesbloqueo = resultado != -1;
+        // Notificacion visual automatica en el hilo principal
+        if (nuevoDesbloqueo && context != null) {
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                android.widget.Toast.makeText(
+                        context,
+                        "🏆 ¡Nuevo Logro Desbloqueado!",
+                        android.widget.Toast.LENGTH_LONG
+                ).show();
+            });
+        }
 
-        return resultado != -1;
+        return nuevoDesbloqueo;
     }
 }

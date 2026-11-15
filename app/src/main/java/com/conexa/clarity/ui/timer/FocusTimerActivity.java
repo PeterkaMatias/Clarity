@@ -533,28 +533,17 @@ public class FocusTimerActivity extends AppCompatActivity {
 
     private void cargarTareasPendientes() {
 
-        List<Tarea> todasLasTareas =
-                tareaDao.obtenerTareasPorUsuario(
-                        idUsuarioActual
-                );
+        tareasPendientes = tareaDao.obtenerTareasParaTemporizador(idUsuarioActual);
 
-        tareasPendientes =
-                new ArrayList<>();
+        if (tareasPendientes == null) {
+            tareasPendientes = new ArrayList<>();
 
-        if (todasLasTareas == null) {
-            return;
-        }
-
-        for (Tarea tarea : todasLasTareas) {
-
-            if (!tarea.isCompletada()) {
-
-                tareasPendientes.add(
-                        tarea
-                );
-            }
         }
     }
+
+
+
+
 
     private void mostrarSelectorTareas() {
 
