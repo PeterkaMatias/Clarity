@@ -101,10 +101,18 @@ public class TareaDao {
     }
 
     public boolean cambiarEstado(int idTarea, String nuevoEstado, String fechaFinalizado){
+        return cambiarEstado(idTarea, nuevoEstado, fechaFinalizado, true);
+    }
+
+    // sincronizarPadre = false se usa cuando la tarea general marca sus micro-pasos en cascada,
+    // para que cada micro-paso no vuelva a modificar a la tarea general
+    private boolean cambiarEstado(int idTarea, String nuevoEstado, String fechaFinalizado,
+                                  boolean sincronizarPadre){
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         int idUsuario;
         boolean esMicroPaso;
+        int idTareaPadre;
         String estadoAnterior;
 
         try(Cursor c = db.rawQuery(
@@ -116,8 +124,20 @@ public class TareaDao {
             }
             idUsuario = c.getInt(0);
             esMicroPaso = !c.isNull(1);
+            idTareaPadre = esMicroPaso ? c.getInt(1) : 0;
             estadoAnterior = c.getString(2);
         }
+
+        // Al completar la tarea general, primero se completan todos sus micro-pasos (100%)
+        if (!esMicroPaso && Tarea.ESTADO_COMPLETADA.equals(nuevoEstado)) {
+            List<Tarea> subList = obtenerSubtareas(idTarea);
+            for (Tarea sub : subList){
+                if (!Tarea.ESTADO_COMPLETADA.equals(sub.getEstado())){
+                    cambiarEstado(sub.getIdTarea(), Tarea.ESTADO_COMPLETADA, fechaFinalizado, false);
+                }
+            }
+        }
+
         ContentValues cv = new ContentValues();
         cv.put("Estado", nuevoEstado);
         if(fechaFinalizado != null){
@@ -129,8 +149,8 @@ public class TareaDao {
                 new String[]{ String.valueOf(idTarea) });
 
         if(filas > 0 &&
-        Tarea.ESTADO_COMPLETADA.equals(nuevoEstado)&&
-        !Tarea.ESTADO_COMPLETADA.equals(estadoAnterior)){
+                Tarea.ESTADO_COMPLETADA.equals(nuevoEstado)&&
+                !Tarea.ESTADO_COMPLETADA.equals(estadoAnterior)){
             int puntos = esMicroPaso ? 10 : 25;
             String tipo = esMicroPaso ? "COMPLETAR_MICROPASO" :  "COMPLETAR_TAREA";
             String descripcion = esMicroPaso
@@ -140,7 +160,7 @@ public class TareaDao {
             String fecha = fechaFinalizado != null
                     ? fechaFinalizado
                     : new java.text.SimpleDateFormat(
-                            "yyyy-MM-dd HH:mm",
+                    "yyyy-MM-dd HH:mm",
                     java.util.Locale.getDefault()
             ).format(new java.util.Date());
             recompensasDao.otorgarPuntos(
@@ -171,26 +191,77 @@ public class TareaDao {
 
         }
 
-        if(filas > 0 && !esMicroPaso) {
-            if (Tarea.ESTADO_COMPLETADA.equals(nuevoEstado)) {
-                // al completar la tarea padre, compeltamos en cascada sus micro-pasos
-                List<Tarea> subList = obtenerSubtareas(idTarea);
-                for (Tarea sub : subList){
-                    if (!Tarea.ESTADO_COMPLETADA.equals(sub.getEstado())){
-                        cambiarEstado(sub.getIdTarea(), Tarea.ESTADO_COMPLETADA, fechaFinalizado);
+        // Al desmarcar la tarea general, todos sus micro-pasos vuelven a pendiente (0%)
+        if (filas > 0 && !esMicroPaso && Tarea.ESTADO_PENDIENTE.equals(nuevoEstado)) {
+            ContentValues cvSub = new ContentValues();
+            cvSub.put("Estado", Tarea.ESTADO_PENDIENTE);
+            cvSub.putNull("Fecha_finalizado");
+            db.update("Tareas", cvSub, "IdTareaPadre = ?",
+                    new String[]{ String.valueOf(idTarea) });
+        }
 
-                    }
-                }
+        // Al marcar o desmarcar un micro-paso, se actualiza la tarea general
+        if (filas > 0 && esMicroPaso && sincronizarPadre) {
+            int total = contarSubtareas(idTareaPadre);
+            int completadas = contarSubtareasCompletadas(idTareaPadre);
 
-            } else if (Tarea.ESTADO_PENDIENTE.equals(nuevoEstado)){
-                //al desmarcar la tarea padre, volvemos sus micro-pasos a PENDIENTES
-                ContentValues cvSub = new ContentValues();
-                cvSub.put("Estado", Tarea.ESTADO_PENDIENTE);
-                cvSub.putNull("Fecha_finalizado");
-                db.update("Tareas", cvSub, "IdTareaPadre = ?", new String[]{ String.valueOf(idTarea)});
+            if (completadas == total) {
+                // se completó el último micro-paso: la tarea general queda completada
+                cambiarEstado(idTareaPadre, Tarea.ESTADO_COMPLETADA, fechaFinalizado);
+
+            } else {
+                // falta algún micro-paso: la tarea general vuelve a pendiente
+                ContentValues cvPadre = new ContentValues();
+                cvPadre.put("Estado", Tarea.ESTADO_PENDIENTE);
+                cvPadre.putNull("Fecha_finalizado");
+                db.update("Tareas", cvPadre, "idTarea = ?",
+                        new String[]{ String.valueOf(idTareaPadre) });
             }
         }
         return filas > 0;
+    }
+
+    /** Cambia solo el titulo de un micro-paso (se usa desde el formulario de la tarea) */
+    public boolean actualizarTituloMicroPaso(int idMicroPaso, String titulo) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put("Titulo", titulo);
+        int filas = db.update("Tareas", cv, "idTarea = ? AND IdTareaPadre IS NOT NULL",
+                new String[]{ String.valueOf(idMicroPaso) });
+        return filas > 0;
+    }
+
+    /** Deja la tarea principal completada solo si todos sus micro-pasos lo están.
+     *  Se usa despues de agregar o borrar micro-pasos. */
+    public void sincronizarEstadoPadre(int idTareaPadre) {
+        int total = contarSubtareas(idTareaPadre);
+        if (total == 0) {
+            return; // sin micro-pasos, la tarea se marca a mano
+        }
+        int completadas = contarSubtareasCompletadas(idTareaPadre);
+
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String estadoPadre = null;
+        try (Cursor c = db.rawQuery("SELECT Estado FROM Tareas WHERE idTarea = ?",
+                new String[]{ String.valueOf(idTareaPadre) })) {
+            if (c.moveToFirst()) {
+                estadoPadre = c.getString(0);
+            }
+        }
+
+        if (completadas == total) {
+            if (!Tarea.ESTADO_COMPLETADA.equals(estadoPadre)) {
+                String fecha = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                        .format(new Date());
+                cambiarEstado(idTareaPadre, Tarea.ESTADO_COMPLETADA, fecha);
+            }
+        } else if (Tarea.ESTADO_COMPLETADA.equals(estadoPadre)) {
+            ContentValues cvPadre = new ContentValues();
+            cvPadre.put("Estado", Tarea.ESTADO_PENDIENTE);
+            cvPadre.putNull("Fecha_finalizado");
+            db.update("Tareas", cvPadre, "idTarea = ?",
+                    new String[]{ String.valueOf(idTareaPadre) });
+        }
     }
 
     // DELETE

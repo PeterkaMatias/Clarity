@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import android.widget.Toast;
 
 public class TareasActivity extends AppCompatActivity
         implements TareasAdapter.OnTareaClickListener {
@@ -367,20 +368,41 @@ public class TareasActivity extends AppCompatActivity
                         ? obtenerFechaActual()
                         : null;
 
-        tareaDao.cambiarEstado(
-                tarea.getIdTarea(),
-                nuevoEstado,
-                fechaFinalizado
-        );
+        boolean actualizada =
+                tareaDao.cambiarEstado(
+                        tarea.getIdTarea(),
+                        nuevoEstado,
+                        fechaFinalizado
+                );
 
-        tarea.setEstado(
-                nuevoEstado
-        );
+        if (actualizada) {
 
-        tarea.setFechaFinalizado(
-                fechaFinalizado
-        );
+            tarea.setEstado(
+                    nuevoEstado
+            );
 
+            tarea.setFechaFinalizado(
+                    fechaFinalizado
+            );
+
+        } else if (isChecked) {
+
+            Toast.makeText(
+                    this,
+                    "Primero completá todos los micro-pasos de esta tarea",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+        } else {
+
+            Toast.makeText(
+                    this,
+                    "Para reabrir la tarea, desmarcá alguno de sus micro-pasos",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+
+        // Recargar la lista para que el checkbox muestre el estado real
         cargarTareas();
     }
 

@@ -28,6 +28,8 @@ import com.conexa.clarity.util.SesionUsuario;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
 import com.conexa.clarity.ui.tareas.TareasActivity;
+import com.conexa.clarity.ui.tareas.FormularioTareaActivity;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNav;
     private ImageButton btnAbrirAjustes;
     private MaterialCardView cardFocusRapido;
+
+    private FloatingActionButton fabAgregarTarea;
 
     private TareasHomeAdapter adapter;
     private TareaDao tareaDao;
@@ -150,6 +154,10 @@ public class MainActivity extends AppCompatActivity {
                 R.id.cardFocusRapido
         );
 
+        fabAgregarTarea = findViewById(
+                R.id.fabAgregarTareaInicio
+        );
+
         panelParental = findViewById(R.id.panelParental);
         panelGeneral = findViewById(R.id.panelGeneral);
 
@@ -179,18 +187,30 @@ public class MainActivity extends AppCompatActivity {
 
                             try {
 
-                                tarea.setCompletada(true);
+                                boolean actualizada =
+                                        tareaDao.actualizarCompletada(
+                                                tarea.getId(),
+                                                true
+                                        );
 
-                                tareaDao.actualizarCompletada(
-                                        tarea.getId(),
-                                        true
-                                );
+                                if (actualizada) {
 
-                                Toast.makeText(
-                                        this,
-                                        "¡Excelente paso! Tarea cumplida",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                                    tarea.setCompletada(true);
+
+                                    Toast.makeText(
+                                            this,
+                                            "¡Excelente paso! Tarea cumplida",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                } else {
+
+                                    Toast.makeText(
+                                            this,
+                                            "Primero completá todos los micro-pasos de esta tarea",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                }
 
                                 cargarDatosUsuario();
                                 cargarTareasDelDia();
@@ -322,6 +342,25 @@ public class MainActivity extends AppCompatActivity {
             );
         }
         View btnAdministrarMenores = findViewById(R.id.btnAdministrarMenores);
+
+        // Botón "+" para crear una tarea desde el inicio
+        if (fabAgregarTarea != null) {
+
+            fabAgregarTarea.setOnClickListener(view -> {
+
+                Intent intent = new Intent(
+                        this,
+                        FormularioTareaActivity.class
+                );
+
+                intent.putExtra(
+                        "id_usuario",
+                        idUsuarioActual
+                );
+
+                startActivity(intent);
+            });
+        }
 
         if (btnAdministrarMenores != null) {
             btnAdministrarMenores.setOnClickListener(v -> {
@@ -494,6 +533,13 @@ public class MainActivity extends AppCompatActivity {
         panelParental.setVisibility(
                 modoParentalActivo ? View.VISIBLE : View.GONE
         );
+
+
+        if (fabAgregarTarea != null) {
+            fabAgregarTarea.setVisibility(
+                    modoParentalActivo ? View.GONE : View.VISIBLE
+            );
+        }
 
         // Actualizar el mensaje
         tvMensajeMotivacional.setText(

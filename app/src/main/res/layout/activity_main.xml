@@ -334,6 +334,20 @@
 
     </androidx.core.widget.NestedScrollView>
 
+    <!-- BOTÓN FLOTANTE PARA CREAR TAREA -->
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAgregarTareaInicio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="96dp"
+        android:contentDescription="Nueva tarea"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/verde_principal"
+        app:tint="#FFFFFF" />
+
     <!-- BARRA INFERIOR FIJADA AL FONDO -->
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

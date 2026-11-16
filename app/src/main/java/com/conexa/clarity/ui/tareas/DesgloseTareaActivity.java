@@ -162,6 +162,7 @@ public class DesgloseTareaActivity extends AppCompatActivity {
                     "DESGLOSE_" + idTareaPadre,
                     fechaCreacion
             );
+            tareaDao.sincronizarEstadoPadre(idTareaPadre);
         }
         Toast.makeText(this, "Se guardaron " + guardados + " micro-pasos.", Toast.LENGTH_SHORT).show();
         finish();
