@@ -1,6 +1,5 @@
 package com.conexa.clarity.ui.timer;
 
-import static com.google.gson.internal.bind.util.ISO8601Utils.format;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -10,9 +9,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.view.LayoutInflater;
+import android.view.Window;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.card.MaterialCardView;
 
 import com.conexa.clarity.MainActivity;
 import com.conexa.clarity.R;
@@ -26,7 +34,7 @@ import com.conexa.clarity.ui.tareas.TareasActivity;
 import com.conexa.clarity.util.SesionUsuario;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
-import com.conexa.clarity.ui.tareas.TareasActivity;
+
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -561,52 +569,341 @@ public class FocusTimerActivity extends AppCompatActivity {
             return;
         }
 
-        String[] titulos =
-                new String[tareasPendientes.size()];
+        Dialog dialog =
+                new Dialog(this);
 
-        for (
-                int i = 0;
-                i < tareasPendientes.size();
-                i++
-        ) {
+        dialog.requestWindowFeature(
+                Window.FEATURE_NO_TITLE
+        );
 
-            titulos[i] =
-                    tareasPendientes
-                            .get(i)
-                            .getTitulo();
+        dialog.setContentView(
+                R.layout.dialog_seleccionar_tarea
+        );
+
+        Window ventana =
+                dialog.getWindow();
+
+        if (ventana != null) {
+
+            ventana.setBackgroundDrawable(
+                    new ColorDrawable(
+                            Color.TRANSPARENT
+                    )
+            );
         }
 
-        new AlertDialog.Builder(this)
-                .setTitle("Seleccionar tarea")
-                .setItems(
-                        titulos,
-                        (dialog, posicion) -> {
+        LinearLayout contenedorOpciones =
+                dialog.findViewById(
+                        R.id.contenedorOpcionesTareas
+                );
 
-                            tareaSeleccionada =
-                                    tareasPendientes.get(
-                                            posicion
-                                    );
+        MaterialButton btnCancelar =
+                dialog.findViewById(
+                        R.id.btnCancelarSelectorTarea
+                );
 
-                            tvTituloTarea.setText(
-                                    tareaSeleccionada
-                                            .getTitulo()
+        MaterialButton btnConfirmar =
+                dialog.findViewById(
+                        R.id.btnConfirmarSelectorTarea
+                );
+
+        LayoutInflater inflater =
+                LayoutInflater.from(this);
+
+        List<RadioButton> botonesRadio =
+                new ArrayList<>();
+
+        final Tarea[] seleccionTemporal =
+                new Tarea[]{
+                        tareaSeleccionada
+                };
+
+        for (Tarea tarea : tareasPendientes) {
+
+            View fila =
+                    inflater.inflate(
+                            R.layout.item_selector_tarea,
+                            contenedorOpciones,
+                            false
+                    );
+
+            MaterialCardView cardOpcion =
+                    (MaterialCardView) fila;
+
+            RadioButton radioButton =
+                    fila.findViewById(
+                            R.id.radioSelectorTarea
+                    );
+
+            TextView tvTitulo =
+                    fila.findViewById(
+                            R.id.tvTituloSelectorTarea
+                    );
+
+            TextView tvTipo =
+                    fila.findViewById(
+                            R.id.tvTipoSelectorTarea
+                    );
+
+            TextView tvDescripcion =
+                    fila.findViewById(
+                            R.id.tvDescripcionSelectorTarea
+                    );
+
+            tvTitulo.setText(
+                    tarea.getTitulo()
+            );
+
+            if (tarea.esMicroPaso()) {
+
+                tvTipo.setText(
+                        "Micro-paso"
+                );
+
+            } else {
+
+                tvTipo.setText(
+                        "Tarea principal"
+                );
+            }
+
+            String descripcion =
+                    tarea.getDescripcion();
+
+            if (descripcion != null
+                    && !descripcion.trim().isEmpty()) {
+
+                tvDescripcion.setText(
+                        descripcion.trim()
+                );
+
+                tvDescripcion.setVisibility(
+                        View.VISIBLE
+                );
+
+            } else {
+
+                tvDescripcion.setVisibility(
+                        View.GONE
+                );
+            }
+
+            boolean estaSeleccionada =
+                    tareaSeleccionada != null
+                            && tareaSeleccionada
+                            .getIdTarea()
+                            == tarea.getIdTarea();
+
+            radioButton.setChecked(
+                    estaSeleccionada
+            );
+
+            if (estaSeleccionada) {
+
+                seleccionTemporal[0] =
+                        tarea;
+
+                cardOpcion.setStrokeWidth(
+                        convertirDpAPixeles(2)
+                );
+
+            } else {
+
+                cardOpcion.setStrokeWidth(
+                        convertirDpAPixeles(1)
+                );
+            }
+
+            botonesRadio.add(
+                    radioButton
+            );
+
+            View.OnClickListener seleccionarOpcion =
+                    view -> {
+
+                        for (RadioButton boton :
+                                botonesRadio) {
+
+                            boton.setChecked(
+                                    false
                             );
+                        }
 
-                            String descripcion = tareaSeleccionada.getDescripcion();
+                        for (
+                                int indice = 0;
+                                indice
+                                        < contenedorOpciones
+                                        .getChildCount();
+                                indice++
+                        ) {
 
-                            if (descripcion != null && !descripcion.trim().isEmpty()) {
-                                tvDescripcionTarea.setText(descripcion);
-                                tvDescripcionTarea.setVisibility(View.VISIBLE);
-                            } else {
-                                tvDescripcionTarea.setVisibility(View.GONE);
+                            View hijo =
+                                    contenedorOpciones
+                                            .getChildAt(
+                                                    indice
+                                            );
+
+                            if (hijo
+                                    instanceof MaterialCardView) {
+
+                                (
+                                        (MaterialCardView) hijo
+                                ).setStrokeWidth(
+                                        convertirDpAPixeles(1)
+                                );
                             }
                         }
-                )
-                .setNegativeButton(
-                        "Cancelar",
-                        null
-                )
-                .show();
+
+                        radioButton.setChecked(
+                                true
+                        );
+
+                        cardOpcion.setStrokeWidth(
+                                convertirDpAPixeles(2)
+                        );
+
+                        seleccionTemporal[0] =
+                                tarea;
+
+                        btnConfirmar.setEnabled(
+                                true
+                        );
+                    };
+
+            fila.setOnClickListener(
+                    seleccionarOpcion
+            );
+
+            radioButton.setOnClickListener(
+                    seleccionarOpcion
+            );
+
+            contenedorOpciones.addView(
+                    fila
+            );
+        }
+
+        btnConfirmar.setEnabled(
+                seleccionTemporal[0] != null
+        );
+
+        btnCancelar.setOnClickListener(
+                view -> dialog.dismiss()
+        );
+
+        btnConfirmar.setOnClickListener(
+                view -> {
+
+                    if (seleccionTemporal[0]
+                            == null) {
+
+                        Toast.makeText(
+                                this,
+                                "Seleccioná una tarea",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        return;
+                    }
+
+                    tareaSeleccionada =
+                            seleccionTemporal[0];
+
+                    tvTituloTarea.setText(
+                            tareaSeleccionada
+                                    .getTitulo()
+                    );
+
+                    String descripcion =
+                            tareaSeleccionada
+                                    .getDescripcion();
+
+                    if (descripcion != null
+                            && !descripcion
+                            .trim()
+                            .isEmpty()) {
+
+                        tvDescripcionTarea.setText(
+                                descripcion.trim()
+                        );
+
+                        tvDescripcionTarea
+                                .setVisibility(
+                                        View.VISIBLE
+                                );
+
+                    } else if (
+                            tareaSeleccionada
+                                    .esMicroPaso()
+                    ) {
+
+                        tvDescripcionTarea.setText(
+                                "Micro-paso seleccionado para esta sesión"
+                        );
+
+                        tvDescripcionTarea
+                                .setVisibility(
+                                        View.VISIBLE
+                                );
+
+                    } else {
+
+                        tvDescripcionTarea
+                                .setVisibility(
+                                        View.GONE
+                                );
+                    }
+
+                    dialog.dismiss();
+                }
+        );
+
+        dialog.setOnShowListener(
+                ignored -> {
+
+                    Window window =
+                            dialog.getWindow();
+
+                    if (window == null) {
+                        return;
+                    }
+
+                    int anchoPantalla =
+                            getResources()
+                                    .getDisplayMetrics()
+                                    .widthPixels;
+
+                    int altoPantalla =
+                            getResources()
+                                    .getDisplayMetrics()
+                                    .heightPixels;
+
+                    window.setLayout(
+                            (int) (
+                                    anchoPantalla * 0.92f
+                            ),
+                            (int) (
+                                    altoPantalla * 0.78f
+                            )
+                    );
+                }
+        );
+
+        dialog.show();
+    }
+
+    private int convertirDpAPixeles(
+            int dp
+    ) {
+
+        float densidad =
+                getResources()
+                        .getDisplayMetrics()
+                        .density;
+
+        return Math.round(
+                dp * densidad
+        );
     }
 
     /*
