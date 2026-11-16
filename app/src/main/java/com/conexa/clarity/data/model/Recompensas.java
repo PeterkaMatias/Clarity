@@ -1,17 +1,26 @@
 package com.conexa.clarity.data.model;
 
 public class Recompensas {
-    private int idRecompenza;
+    private int idRecompensa;
     private int idUsuario;
     private Integer idTarea;
     private int puntos;
     private String tipo;
     private String descripcion;
     private String fecha;
+    private String referencia;
 
-    public Recompensas(int idRecompenza, int idUsuario, Integer idTarea,
+    public String getReferencia() {
+        return referencia;
+    }
+
+    public void setReferencia(String referencia) {
+        this.referencia = referencia;
+    }
+
+    public Recompensas(int idRecompensa, int idUsuario, Integer idTarea,
                        int puntos, String tipo, String descripcion, String fecha){
-        this.idRecompenza = idRecompenza;
+        this.idRecompensa = idRecompensa;
         this.idUsuario = idUsuario;
         this.idTarea = idTarea;
         this.puntos = puntos;
@@ -22,12 +31,12 @@ public class Recompensas {
 
     }
 
-    public int getIdRecompenza() {
-        return idRecompenza;
+    public int getIdRecompensa() {
+        return idRecompensa;
     }
 
-    public void setIdRecompenza(int idRecompenza) {
-        this.idRecompenza = idRecompenza;
+    public void setIdRecompensa(int idRecompensa) {
+        this.idRecompensa = idRecompensa;
     }
 
     public int getIdUsuario() {

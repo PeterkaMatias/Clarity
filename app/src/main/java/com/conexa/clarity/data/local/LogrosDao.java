@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.widget.Toast;
 
 import com.conexa.clarity.data.model.Logros;
 
@@ -12,9 +13,12 @@ import java.util.List;
 
 public class LogrosDao {
     private final DatabaseHelper dbHelper;
+    private final Context context;
     public LogrosDao(Context context){
+        this.context = context;
         this.dbHelper = DatabaseHelper.getInstance(context);
     }
+
 
     public long agregar(Logros logro) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -75,5 +79,48 @@ public class LogrosDao {
         }
 
         return lista;
+    }
+    public List<Integer> obtenerLogrosDesbloqueados(int idUsuario) {
+        List<Integer> lista = new ArrayList<>();
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT IdLogro FROM UsuarioLogros WHERE IdUsuario = ?";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{String.valueOf(idUsuario)})) {
+            while (c.moveToNext()) {
+                lista.add(c.getInt(0));
+            }
+        }
+
+        return lista;
+    }
+    public boolean desbloquear(int idUsuario, int idLogro, String fecha) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put("IdUsuario", idUsuario);
+        cv.put("IdLogro", idLogro);
+        cv.put("Fecha_obtenido", fecha);
+
+        long resultado = db.insertWithOnConflict(
+                "UsuarioLogros",
+                null,
+                cv,
+                SQLiteDatabase.CONFLICT_IGNORE
+        );
+        boolean nuevoDesbloqueo = resultado != -1;
+        // Notificacion visual automatica en el hilo principal
+        if (nuevoDesbloqueo && context != null) {
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                android.widget.Toast.makeText(
+                        context,
+                        "🏆 ¡Nuevo Logro Desbloqueado!",
+                        android.widget.Toast.LENGTH_LONG
+                ).show();
+            });
+        }
+
+        return nuevoDesbloqueo;
     }
 }

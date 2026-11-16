@@ -4,14 +4,20 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".ClarityApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_clarity_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_clarity_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Clarity">
+
+        <!-- Historial Lumi -->
+        <activity
+            android:name=".ui.chat.HistorialChatActivity"
+            android:exported="false" />
 
         <!-- Gestor de tareas -->
         <activity
@@ -68,6 +74,11 @@
             android:name=".ui.settings.AjustesActivity"
             android:exported="false" />
 
+        <!-- Progreso y logros -->
+        <activity
+            android:name=".ui.logros.LogrosyProgreso"
+            android:exported="false" />
+
         <!-- Crear/editar tarea -->
         <activity
             android:name=".ui.tareas.FormularioTareaActivity"
@@ -79,6 +90,18 @@
             android:name=".ui.tareas.DesgloseTareaActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Perfil Menor -->
+        <activity
+            android:name=".ui.PerfilesMenoresActivity"
+            android:exported="false" />
+
+        <!-- Tareas asignadas a perfiles de menores -->
+        <activity
+            android:name=".ui.TareasMenorActivity"
+            android:exported="false" />
+
+
 
     </application>
 

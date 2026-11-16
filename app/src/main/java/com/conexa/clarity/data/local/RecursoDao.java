@@ -4,17 +4,22 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.icu.text.SimpleDateFormat;
 
 import com.conexa.clarity.data.model.Recurso;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class RecursoDao {
     private final DatabaseHelper dbHelper;
+    private final LogrosDao logrosDao;
 
     public RecursoDao(Context context) {
         this.dbHelper = DatabaseHelper.getInstance(context);
+        this.logrosDao = new LogrosDao(context);
     }
     public List<Recurso> obtenerRecursos(int idUsuario, String categoriaFiltro, String queryTexto) {
         List<Recurso> lista = new ArrayList<>();
@@ -67,10 +72,71 @@ public class RecursoDao {
             ContentValues values = new ContentValues();
             values.put("IdUsuario", idUsuario);
             values.put("IdRecurso", idRecurso);
-            return db.insert("Favoritos", null, values) != -1;
+
+            long resultado = db.insert("Favoritos", null, values);
+
+            if (resultado != -1) {
+                verificarEspecialistaTDAH(idUsuario);
+            }
+
+            return resultado != -1;
+
         } else {
             return db.delete("Favoritos", "IdUsuario = ? AND IdRecurso = ?",
                     new String[]{String.valueOf(idUsuario), String.valueOf(idRecurso)}) > 0;
+        }
+    }
+    public boolean registrarLectura(int idUsuario, int idRecurso){
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        ContentValues valores = new ContentValues();
+        valores.put("IdUsuario", idUsuario);
+        valores.put("IdRecurso", idRecurso);
+        valores.put(
+                "Fecha",
+                new SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss",
+                        Locale.getDefault()
+                ).format(new Date())
+        );
+        long resultado = db.insertWithOnConflict(
+                "RecursosLeidos",
+                null,
+                valores,
+                SQLiteDatabase.CONFLICT_IGNORE
+        );
+
+        if (resultado != -1) {
+            verificarEspecialistaTDAH(idUsuario);
+        }
+
+        return resultado != -1;
+    }
+    // LOGRO 9: Especialista en TDAH
+    public void verificarEspecialistaTDAH(int idUsuario) {
+
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        String sql = "SELECT COUNT(DISTINCT f.IdRecurso) " +
+                "FROM Favoritos f " +
+                "INNER JOIN RecursosLeidos r " +
+                "ON f.IdRecurso = r.IdRecurso " +
+                "AND f.IdUsuario = r.IdUsuario " +
+                "WHERE f.IdUsuario = ?";
+
+        try (Cursor c = db.rawQuery(sql, new String[]{
+                String.valueOf(idUsuario)
+        })) {
+
+            if (c.moveToFirst() && c.getInt(0) >= 3) {
+
+                String fecha = new SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss",
+                        Locale.getDefault()
+                ).format(new Date());
+
+                logrosDao.desbloquear(idUsuario, 9, fecha);
+            }
         }
     }
 }

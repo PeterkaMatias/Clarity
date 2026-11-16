@@ -3,6 +3,10 @@ package com.conexa.clarity.ui.chat;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.Typeface;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.conexa.clarity.R;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ChatAdapter
         extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -59,22 +65,24 @@ public class ChatAdapter
 
         if (viewType == TIPO_USUARIO) {
 
-            View view = inflater.inflate(
-                    R.layout.item_mensaje_usuario,
-                    parent,
-                    false
-            );
+            View view =
+                    inflater.inflate(
+                            R.layout.item_mensaje_usuario,
+                            parent,
+                            false
+                    );
 
             return new UsuarioViewHolder(
                     view
             );
         }
 
-        View view = inflater.inflate(
-                R.layout.item_mensaje_lumi,
-                parent,
-                false
-        );
+        View view =
+                inflater.inflate(
+                        R.layout.item_mensaje_lumi,
+                        parent,
+                        false
+                );
 
         return new LumiViewHolder(
                 view
@@ -99,19 +107,21 @@ public class ChatAdapter
                     mensaje.getTexto()
             );
 
+            usuarioHolder.itemView.setOnLongClickListener(
+                    null
+            );
+
         } else if (holder instanceof LumiViewHolder) {
 
             LumiViewHolder lumiHolder =
                     (LumiViewHolder) holder;
 
             lumiHolder.tvMensajeLumi.setText(
-                    mensaje.getTexto()
+                    aplicarFormatoMarkdown(
+                            mensaje.getTexto()
+                    )
             );
 
-            /*
-             * Mantener presionada una respuesta
-             * de Lumi copia el texto completo.
-             */
             lumiHolder.itemView.setOnLongClickListener(
                     view -> {
 
@@ -126,6 +136,71 @@ public class ChatAdapter
         }
     }
 
+    private CharSequence aplicarFormatoMarkdown(
+            String texto
+    ) {
+
+        if (texto == null
+                || texto.isEmpty()) {
+
+            return "";
+        }
+
+        SpannableStringBuilder resultado =
+                new SpannableStringBuilder(
+                        texto
+                );
+
+        Pattern patronNegrita =
+                Pattern.compile(
+                        "\\*\\*(.+?)\\*\\*",
+                        Pattern.DOTALL
+                );
+
+        Matcher matcher =
+                patronNegrita.matcher(
+                        resultado
+                );
+
+        while (matcher.find()) {
+
+            int inicio =
+                    matcher.start();
+
+            int fin =
+                    matcher.end();
+
+            String contenido =
+                    matcher.group(1);
+
+            if (contenido == null) {
+                contenido = "";
+            }
+
+            resultado.replace(
+                    inicio,
+                    fin,
+                    contenido
+            );
+
+            resultado.setSpan(
+                    new StyleSpan(
+                            Typeface.BOLD
+                    ),
+                    inicio,
+                    inicio + contenido.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+
+            matcher =
+                    patronNegrita.matcher(
+                            resultado
+                    );
+        }
+
+        return resultado;
+    }
+
     private void copiarTexto(
             Context context,
             String texto
@@ -137,10 +212,6 @@ public class ChatAdapter
             return;
         }
 
-        /*
-         * Evita copiar el mensaje temporal
-         * de la animación.
-         */
         if (texto.startsWith(
                 "Lumi está pensando"
         )) {
@@ -177,12 +248,19 @@ public class ChatAdapter
 
     @Override
     public int getItemCount() {
-        return mensajes.size();
+
+        return mensajes != null
+                ? mensajes.size()
+                : 0;
     }
 
     public void agregarMensaje(
             Mensaje mensaje
     ) {
+
+        if (mensaje == null) {
+            return;
+        }
 
         mensajes.add(
                 mensaje

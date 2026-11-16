@@ -267,7 +267,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="Estudiar programación"
+                                android:text="Seleccioná una tarea"
                                 android:textColor="@color/gris_texto"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
@@ -277,7 +277,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="Repasar los temas del trabajo final."
+                                android:text="Elegí una tarea para comenzar tu sesión de enfoque."
                                 android:textColor="@color/gris_texto"
                                 android:textSize="14sp" />
 
