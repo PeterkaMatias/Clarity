@@ -11,23 +11,27 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.conexa.clarity.data.local.LogrosDao;
 import com.conexa.clarity.data.local.PreferenciaUsuarioDao;
 import com.conexa.clarity.data.local.TareaDao;
 import com.conexa.clarity.data.local.UsuarioDao;
 import com.conexa.clarity.data.model.Tarea;
 import com.conexa.clarity.data.model.Usuario;
-import com.conexa.clarity.ui.auth.LoginActivity;
 import com.conexa.clarity.ui.PerfilesMenoresActivity;
 import com.conexa.clarity.ui.TareasHomeAdapter;
+import com.conexa.clarity.ui.auth.LoginActivity;
 import com.conexa.clarity.ui.chat.ChatActivity;
 import com.conexa.clarity.ui.logros.LogrosyProgreso;
 import com.conexa.clarity.ui.resources.RecursosActivity;
 import com.conexa.clarity.ui.settings.AjustesActivity;
+import com.conexa.clarity.ui.tareas.FormularioTareaActivity;
+import com.conexa.clarity.ui.tareas.TareasActivity;
 import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.conexa.clarity.util.SesionUsuario;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.card.MaterialCardView;
-import com.conexa.clarity.ui.tareas.TareasActivity;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,124 +42,164 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvNivelUsuario;
     private TextView tvPuntosTotales;
     private TextView tvSinTareas;
+    private TextView tvMensajeMotivacional;
 
     private RecyclerView rvTareasHoy;
     private BottomNavigationView bottomNav;
     private ImageButton btnAbrirAjustes;
     private MaterialCardView cardFocusRapido;
+    private FloatingActionButton fabAgregarTarea;
+    private LinearProgressIndicator progresoNivel;
+
+    private View panelParental;
+    private View panelGeneral;
 
     private TareasHomeAdapter adapter;
     private TareaDao tareaDao;
     private UsuarioDao usuarioDao;
+    private PreferenciaUsuarioDao preferenciaDao;
+    private LogrosDao logrosDao;
 
     private int idUsuarioActual;
-
-    private PreferenciaUsuarioDao preferenciaDao;
-
-    private View panelParental;
-    private View panelGeneral;
-    private TextView tvMensajeMotivacional;
-
     private boolean modoParentalActivo = false;
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(
+            Bundle savedInstanceState
+    ) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
-        ImageButton btnAbrirLogros = findViewById(R.id.btnAbrirLogros);
+        setContentView(
+                R.layout.activity_main
+        );
 
-        btnAbrirLogros.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LogrosyProgreso.class);
-            startActivity(intent);
-        });
+        idUsuarioActual =
+                SesionUsuario.obtenerId(this);
 
-        // Obtener el ID del usuario que inició sesión
-        idUsuarioActual = SesionUsuario.obtenerId(this);
+        if (idUsuarioActual
+                == SesionUsuario.SIN_SESION) {
 
-        // Verificar que exista una sesión activa
-        if (idUsuarioActual == SesionUsuario.SIN_SESION) {
+            Intent intent =
+                    new Intent(
+                            this,
+                            LoginActivity.class
+                    );
 
-            Intent intent = new Intent(this, LoginActivity.class);
-
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_CLEAR_TASK
+            );
 
             startActivity(intent);
             finish();
+
             return;
         }
 
-        // Inicializar los DAO
-        preferenciaDao = new PreferenciaUsuarioDao(this);
-        tareaDao = new TareaDao(this);
-        usuarioDao = new UsuarioDao(this);
+        preferenciaDao =
+                new PreferenciaUsuarioDao(this);
 
-        // Inicializar componentes y eventos
+        tareaDao =
+                new TareaDao(this);
+
+        usuarioDao =
+                new UsuarioDao(this);
+
+        logrosDao =
+                new LogrosDao(this);
+
         inicializarVistas();
         configurarNavegacion();
         configurarEventos();
     }
 
-
-
     @Override
     protected void onResume() {
         super.onResume();
+
         cargarModoParental();
         cargarDatosUsuario();
+        actualizarProgresoLogros();
 
-        // Mostrar las tareas personales solamente en modo general
         if (!modoParentalActivo) {
+
             cargarTareasDelDia();
         }
 
         if (bottomNav != null) {
-            bottomNav.setSelectedItemId(R.id.nav_inicio);
+
+            bottomNav.setSelectedItemId(
+                    R.id.nav_inicio
+            );
         }
     }
 
-
     private void inicializarVistas() {
 
-        tvSaludoUsuario = findViewById(
-                R.id.tvSaludoUsuario
-        );
+        tvSaludoUsuario =
+                findViewById(
+                        R.id.tvSaludoUsuario
+                );
 
-        tvNivelUsuario = findViewById(
-                R.id.tvNivelUsuario
-        );
+        tvNivelUsuario =
+                findViewById(
+                        R.id.tvNivelUsuario
+                );
 
-        tvPuntosTotales = findViewById(
-                R.id.tvPuntosTotales
-        );
+        tvPuntosTotales =
+                findViewById(
+                        R.id.tvPuntosTotales
+                );
 
-        tvSinTareas = findViewById(
-                R.id.tvSinTareas
-        );
+        tvSinTareas =
+                findViewById(
+                        R.id.tvSinTareas
+                );
 
-        rvTareasHoy = findViewById(
-                R.id.rvTareasHoy
-        );
+        rvTareasHoy =
+                findViewById(
+                        R.id.rvTareasHoy
+                );
 
-        bottomNav = findViewById(
-                R.id.bottomNavigationView
-        );
+        bottomNav =
+                findViewById(
+                        R.id.bottomNavigationView
+                );
 
-        btnAbrirAjustes = findViewById(
-                R.id.btnAbrirAjustes
-        );
+        btnAbrirAjustes =
+                findViewById(
+                        R.id.btnAbrirAjustes
+                );
 
-        cardFocusRapido = findViewById(
-                R.id.cardFocusRapido
-        );
+        cardFocusRapido =
+                findViewById(
+                        R.id.cardFocusRapido
+                );
 
-        panelParental = findViewById(R.id.panelParental);
-        panelGeneral = findViewById(R.id.panelGeneral);
+        fabAgregarTarea =
+                findViewById(
+                        R.id.fabAgregarTareaInicio
+                );
+
+        panelParental =
+                findViewById(
+                        R.id.panelParental
+                );
+
+        panelGeneral =
+                findViewById(
+                        R.id.panelGeneral
+                );
 
         tvMensajeMotivacional =
-                findViewById(R.id.tvMensajeMotivacional);
+                findViewById(
+                        R.id.tvMensajeMotivacional
+                );
 
+        progresoNivel =
+                findViewById(
+                        R.id.progresoNivel
+                );
 
         if (bottomNav != null) {
 
@@ -164,58 +208,145 @@ public class MainActivity extends AppCompatActivity {
             );
         }
 
-        if (rvTareasHoy != null) {
+        configurarListaTareas();
+    }
 
-            rvTareasHoy.setLayoutManager(
-                    new LinearLayoutManager(this)
-            );
+    private void configurarListaTareas() {
 
-            adapter = new TareasHomeAdapter(
-                    new ArrayList<>(),
-                    (tarea, isChecked, position) -> {
+        if (rvTareasHoy == null) {
+            return;
+        }
 
-                        if (isChecked
-                                && tareaDao != null) {
+        rvTareasHoy.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+
+        adapter =
+                new TareasHomeAdapter(
+                        new ArrayList<>(),
+                        (tarea, isChecked, position) -> {
+
+                            if (!isChecked
+                                    || tareaDao == null) {
+
+                                return;
+                            }
 
                             try {
 
-                                tarea.setCompletada(true);
+                                boolean actualizada =
+                                        tareaDao.actualizarCompletada(
+                                                tarea.getId(),
+                                                true
+                                        );
 
-                                tareaDao.actualizarCompletada(
-                                        tarea.getId(),
-                                        true
-                                );
+                                if (actualizada) {
 
-                                Toast.makeText(
-                                        this,
-                                        "¡Excelente paso! Tarea cumplida",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                                    tarea.setCompletada(
+                                            true
+                                    );
+
+                                    Toast.makeText(
+                                            this,
+                                            "¡Excelente paso! Tarea cumplida",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                } else {
+
+                                    Toast.makeText(
+                                            this,
+                                            "Primero completá todos los micro-pasos de esta tarea",
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+                                }
 
                                 cargarDatosUsuario();
                                 cargarTareasDelDia();
+                                actualizarProgresoLogros();
 
-                            } catch (Exception e) {
+                            } catch (Exception exception) {
 
-                                e.printStackTrace();
+                                exception.printStackTrace();
                             }
                         }
-                    }
+                );
+
+        rvTareasHoy.setAdapter(
+                adapter
+        );
+    }
+
+    private void actualizarProgresoLogros() {
+
+        if (logrosDao == null
+                || progresoNivel == null
+                || idUsuarioActual <= 0) {
+
+            return;
+        }
+
+        try {
+
+            int totalLogros =
+                    logrosDao
+                            .contarLogrosDisponibles();
+
+            int logrosObtenidos =
+                    logrosDao
+                            .contarLogrosObtenidos(
+                                    idUsuarioActual
+                            );
+
+            int porcentaje =
+                    logrosDao
+                            .calcularPorcentajeLogros(
+                                    idUsuarioActual
+                            );
+
+            progresoNivel.setProgressCompat(
+                    porcentaje,
+                    true
             );
 
-            rvTareasHoy.setAdapter(
-                    adapter
+            if (tvPuntosTotales != null) {
+
+                tvPuntosTotales.setText(
+                        "🏆 " +
+                                logrosObtenidos +
+                                " de " +
+                                totalLogros +
+                                " logros"
+                );
+            }
+
+        } catch (Exception exception) {
+
+            exception.printStackTrace();
+
+            progresoNivel.setProgressCompat(
+                    0,
+                    false
             );
+
+            if (tvPuntosTotales != null) {
+
+                tvPuntosTotales.setText(
+                        "🏆 0 logros"
+                );
+            }
         }
     }
+
     private void abrirPantalla(
             Class<?> pantallaDestino
     ) {
 
-        Intent intent = new Intent(
-                MainActivity.this,
-                pantallaDestino
-        );
+        Intent intent =
+                new Intent(
+                        MainActivity.this,
+                        pantallaDestino
+                );
 
         intent.putExtra(
                 "id_usuario",
@@ -231,6 +362,7 @@ public class MainActivity extends AppCompatActivity {
 
         finish();
     }
+
     private void configurarNavegacion() {
 
         if (bottomNav == null) {
@@ -241,63 +373,109 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_inicio
         );
 
-        bottomNav.setOnItemSelectedListener(item -> {
+        bottomNav.setOnItemSelectedListener(
+                item -> {
 
-            int itemId = item.getItemId();
+                    int itemId =
+                            item.getItemId();
 
-            if (itemId == R.id.nav_inicio) {
+                    if (itemId
+                            == R.id.nav_inicio) {
 
-                return true;
+                        return true;
 
-            } else if(itemId == R.id.nav_tareas) {
+                    } else if (
+                            itemId == R.id.nav_tareas
+                    ) {
 
-                abrirPantalla(
-                        TareasActivity.class
-                );
+                        abrirPantalla(
+                                TareasActivity.class
+                        );
 
-                return true;
+                        return true;
 
-            } else if (itemId == R.id.nav_recursos) {
+                    } else if (
+                            itemId == R.id.nav_recursos
+                    ) {
 
-                abrirPantalla(
-                        RecursosActivity.class
-                );
+                        abrirPantalla(
+                                RecursosActivity.class
+                        );
 
-                return true;
+                        return true;
 
-            } else if (itemId == R.id.nav_chat) {
+                    } else if (
+                            itemId == R.id.nav_chat
+                    ) {
 
-                abrirPantalla(
-                        ChatActivity.class
-                );
+                        abrirPantalla(
+                                ChatActivity.class
+                        );
 
-                return true;
+                        return true;
 
-            } else if (itemId == R.id.nav_enfoque) {
+                    } else if (
+                            itemId == R.id.nav_enfoque
+                    ) {
 
-                abrirPantalla(
-                        FocusTimerActivity.class
-                );
+                        abrirPantalla(
+                                FocusTimerActivity.class
+                        );
 
-                return true;
-            }
+                        return true;
+                    }
 
-            return false;
-        });
+                    return false;
+                }
+        );
     }
 
     private void configurarEventos() {
 
+        ImageButton btnAbrirLogros =
+                findViewById(
+                        R.id.btnAbrirLogros
+                );
+
+        if (btnAbrirLogros != null) {
+
+            btnAbrirLogros.setOnClickListener(
+                    view -> {
+
+                        Intent intent =
+                                new Intent(
+                                        MainActivity.this,
+                                        LogrosyProgreso.class
+                                );
+
+                        intent.putExtra(
+                                "id_usuario",
+                                idUsuarioActual
+                        );
+
+                        startActivity(intent);
+                    }
+            );
+        }
+
         if (btnAbrirAjustes != null) {
 
             btnAbrirAjustes.setOnClickListener(
-                    view ->
-                            startActivity(
-                                    new Intent(
-                                            this,
-                                            AjustesActivity.class
-                                    )
-                            )
+                    view -> {
+
+                        Intent intent =
+                                new Intent(
+                                        this,
+                                        AjustesActivity.class
+                                );
+
+                        intent.putExtra(
+                                "id_usuario",
+                                idUsuarioActual
+                        );
+
+                        startActivity(intent);
+                    }
             );
         }
 
@@ -321,22 +499,70 @@ public class MainActivity extends AppCompatActivity {
                     }
             );
         }
-        View btnAdministrarMenores = findViewById(R.id.btnAdministrarMenores);
 
-        if (btnAdministrarMenores != null) {
-            btnAdministrarMenores.setOnClickListener(v -> {
-                if (modoParentalActivo) {
-                    startActivity(new Intent(
-                            this,
-                            PerfilesMenoresActivity.class
-                    ));
-                }
-            });
+        if (fabAgregarTarea != null) {
+
+            fabAgregarTarea.setOnClickListener(
+                    view -> {
+
+                        Intent intent =
+                                new Intent(
+                                        this,
+                                        FormularioTareaActivity.class
+                                );
+
+                        intent.putExtra(
+                                "id_usuario",
+                                idUsuarioActual
+                        );
+
+                        startActivity(intent);
+                    }
+            );
         }
 
-        View btnVerTodasTareas = findViewById(R.id.btnVerTodasTareas);
+        View btnAdministrarMenores =
+                findViewById(
+                        R.id.btnAdministrarMenores
+                );
+
+        if (btnAdministrarMenores != null) {
+
+            btnAdministrarMenores.setOnClickListener(
+                    view -> {
+
+                        if (modoParentalActivo) {
+
+                            Intent intent =
+                                    new Intent(
+                                            this,
+                                            PerfilesMenoresActivity.class
+                                    );
+
+                            intent.putExtra(
+                                    "id_usuario",
+                                    idUsuarioActual
+                            );
+
+                            startActivity(intent);
+                        }
+                    }
+            );
+        }
+
+        View btnVerTodasTareas =
+                findViewById(
+                        R.id.btnVerTodasTareas
+                );
+
         if (btnVerTodasTareas != null) {
-            btnVerTodasTareas.setOnClickListener(v -> abrirPantalla(TareasActivity.class));
+
+            btnVerTodasTareas.setOnClickListener(
+                    view ->
+                            abrirPantalla(
+                                    TareasActivity.class
+                            )
+            );
         }
     }
 
@@ -369,20 +595,13 @@ public class MainActivity extends AppCompatActivity {
                         );
                     }
 
-                    if (tvPuntosTotales != null) {
-
-                        tvPuntosTotales.setText(
-                                "✨ Enfoque activo"
-                        );
-                    }
-
                     return;
                 }
             }
 
-        } catch (Exception e) {
+        } catch (Exception exception) {
 
-            e.printStackTrace();
+            exception.printStackTrace();
         }
 
         if (tvSaludoUsuario != null) {
@@ -398,13 +617,6 @@ public class MainActivity extends AppCompatActivity {
                     "Bienvenido a Clarity"
             );
         }
-
-        if (tvPuntosTotales != null) {
-
-            tvPuntosTotales.setText(
-                    "✨ 0 pts"
-            );
-        }
     }
 
     private void cargarTareasDelDia() {
@@ -417,9 +629,10 @@ public class MainActivity extends AppCompatActivity {
             if (tareaDao != null) {
 
                 List<Tarea> todas =
-                        tareaDao.obtenerTareasPorUsuario(
-                                idUsuarioActual
-                        );
+                        tareaDao
+                                .obtenerTareasPorUsuario(
+                                        idUsuarioActual
+                                );
 
                 if (todas != null) {
 
@@ -435,9 +648,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-        } catch (Exception e) {
+        } catch (Exception exception) {
 
-            e.printStackTrace();
+            exception.printStackTrace();
         }
 
         if (pendientes.isEmpty()) {
@@ -481,27 +694,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private void cargarModoParental() {
 
-        modoParentalActivo = preferenciaDao.estaModoParentalActivo(idUsuarioActual);
+        modoParentalActivo =
+                preferenciaDao
+                        .estaModoParentalActivo(
+                                idUsuarioActual
+                        );
 
-        // Mostrar el panel correspondiente
         panelGeneral.setVisibility(
-                modoParentalActivo ? View.GONE : View.VISIBLE
+                modoParentalActivo
+                        ? View.GONE
+                        : View.VISIBLE
         );
 
         panelParental.setVisibility(
-                modoParentalActivo ? View.VISIBLE : View.GONE
+                modoParentalActivo
+                        ? View.VISIBLE
+                        : View.GONE
         );
 
-        // Actualizar el mensaje
+        if (fabAgregarTarea != null) {
+
+            fabAgregarTarea.setVisibility(
+                    modoParentalActivo
+                            ? View.GONE
+                            : View.VISIBLE
+            );
+        }
+
         tvMensajeMotivacional.setText(
                 modoParentalActivo
                         ? "Organizá y acompañá las actividades del menor."
                         : "Un paso a la vez, a tu propio ritmo."
         );
     }
-
 }
-

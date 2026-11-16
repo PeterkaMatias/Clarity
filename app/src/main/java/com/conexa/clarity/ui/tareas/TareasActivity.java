@@ -20,12 +20,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.conexa.clarity.util.SesionUsuario;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import android.widget.Toast;
 
 public class TareasActivity extends AppCompatActivity
         implements TareasAdapter.OnTareaClickListener {
@@ -40,7 +42,7 @@ public class TareasActivity extends AppCompatActivity
     private FloatingActionButton fabAgregar;
     private BottomNavigationView bottomNavigation;
 
-    private int idUsuarioActual = 1;
+    private int idUsuarioActual;
 
     private String filtroEstado = "TODAS";
     private String filtroPrioridad = "TODAS";
@@ -51,10 +53,7 @@ public class TareasActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_tareas);
 
-        idUsuarioActual = getIntent().getIntExtra(
-                "id_usuario",
-                1
-        );
+        idUsuarioActual = SesionUsuario.obtenerId(this);
 
         tareaDao = new TareaDao(this);
 
@@ -369,20 +368,41 @@ public class TareasActivity extends AppCompatActivity
                         ? obtenerFechaActual()
                         : null;
 
-        tareaDao.cambiarEstado(
-                tarea.getIdTarea(),
-                nuevoEstado,
-                fechaFinalizado
-        );
+        boolean actualizada =
+                tareaDao.cambiarEstado(
+                        tarea.getIdTarea(),
+                        nuevoEstado,
+                        fechaFinalizado
+                );
 
-        tarea.setEstado(
-                nuevoEstado
-        );
+        if (actualizada) {
 
-        tarea.setFechaFinalizado(
-                fechaFinalizado
-        );
+            tarea.setEstado(
+                    nuevoEstado
+            );
 
+            tarea.setFechaFinalizado(
+                    fechaFinalizado
+            );
+
+        } else if (isChecked) {
+
+            Toast.makeText(
+                    this,
+                    "Primero completá todos los micro-pasos de esta tarea",
+                    Toast.LENGTH_SHORT
+            ).show();
+
+        } else {
+
+            Toast.makeText(
+                    this,
+                    "Para reabrir la tarea, desmarcá alguno de sus micro-pasos",
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+
+        // Recargar la lista para que el checkbox muestre el estado real
         cargarTareas();
     }
 

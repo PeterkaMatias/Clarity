@@ -209,12 +209,25 @@ public class TareasAdapter extends RecyclerView.Adapter<TareasAdapter.TareaViewH
 
                         actualizarProgresoSubtareas(tareaPadre);
 
-                        // Si todos los micro-pasos se completaron, marcar la tarea principal
+                        // La tarea principal está completada solo si todos los micro-pasos lo están
+                        // (la base ya la actualizó en cambiarEstado, acá solo se refleja en pantalla)
                         int total = tareaDao.contarSubtareas(tareaPadre.getIdTarea());
                         int completadas = tareaDao.contarSubtareasCompletadas(tareaPadre.getIdTarea());
-                        if (total > 0 && completadas == total && !cbCompletada.isChecked()) {
-                            cbCompletada.setChecked(true);
-                        }
+                        boolean padreCompletada = total > 0 && completadas == total;
+
+                        tareaPadre.setEstado(padreCompletada
+                                ? Tarea.ESTADO_COMPLETADA
+                                : Tarea.ESTADO_PENDIENTE);
+
+                        // Se quita el listener para que no vuelva a llamar a la base
+                        cbCompletada.setOnCheckedChangeListener(null);
+                        cbCompletada.setChecked(padreCompletada);
+                        aplicarEfectoTachado(padreCompletada);
+                        cbCompletada.setOnCheckedChangeListener((buttonView, checked) -> {
+                            if (listener != null) {
+                                listener.onTareaCheckChange(tareaPadre, checked);
+                            }
+                        });
                     });
 
                     contenedorMicroPasos.addView(cb);

@@ -22,6 +22,7 @@ import com.conexa.clarity.ui.timer.FocusTimerActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.conexa.clarity.util.SesionUsuario;
 
 
 
@@ -42,7 +43,7 @@ public class RecursosActivity extends AppCompatActivity
     private String categoriaActual = "TODAS";
     private String queryActual = "";
 
-    private int idUsuarioActual = 1;
+    private int idUsuarioActual;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +51,7 @@ public class RecursosActivity extends AppCompatActivity
 
         setContentView(R.layout.activity_recursos);
 
-        idUsuarioActual = getIntent().getIntExtra(
-                "id_usuario",
-                1
-        );
+        idUsuarioActual = SesionUsuario.obtenerId(this);
 
         inicializarVistas();
         configurarAjustes();
