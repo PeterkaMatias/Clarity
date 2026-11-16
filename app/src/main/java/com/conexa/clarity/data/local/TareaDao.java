@@ -51,7 +51,7 @@ public class TareaDao {
     /** Devuelve tareas principales del usuario ordenadas por fecha de vencimiento */
     public List<Tarea> obtenerPrincipales(int idUsuario){
         return consultar(
-                "SELECT * FROM Tareas WHERE idUsuario = ? AND IdTareaPadre IS NULL ORDER BY Fecha_vencimiento ASC",
+                "SELECT * FROM Tareas WHERE idUsuario = ? AND IdPerfilMenor IS NULL AND IdTareaPadre IS NULL ORDER BY Fecha_vencimiento ASC",
                 new String[]{ String.valueOf(idUsuario) }
         );
 
@@ -60,7 +60,7 @@ public class TareaDao {
     /** Devuelve tareas principales filtradas por estado (PENDIENTE, EN_PROGRESO, COMPLETADA) */
     public List<Tarea> obtenerPorEstado(int idUsuario, String estado){
         return consultar(
-                "SELECT * FROM Tareas WHERE idUsuario = ? AND Estado = ? AND IdTareaPadre IS NULL ORDER BY Fecha_vencimiento ASC",
+                "SELECT * FROM Tareas WHERE idUsuario = ? AND IdPerfilMenor IS NULL AND Estado = ? AND IdTareaPadre IS NULL ORDER BY Fecha_vencimiento ASC",
                 new String[] { String.valueOf(idUsuario), estado }
         );
 
